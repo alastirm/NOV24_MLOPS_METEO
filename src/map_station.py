@@ -12,19 +12,6 @@ import init_data
 data_dir = "../data_csv/weatherAUS_091224.csv"
 df = init_data.initialize_data_weatherAU(data_dir)
 
-# Vérification chargement
-
-df.head()
-df.describe()
-
-# Ajout de la variable climate 
-Location_climate = pd.read_csv("../data_csv/climat_location_unique.csv")
-
-df = pd.merge(df, Location_climate,  on = "Location", how="left")
-
-df[["Location","Climate"]].sample(20)
-df["Climate"].isna().sum()
-
 # Ajout des coordonnées
 
 cities_coordinates = {
@@ -84,8 +71,6 @@ df['coord'] = df['Location'].map(cities_coordinates)
 df[['Lat', 'Lon']] = pd.DataFrame(df['coord'].tolist(), index=df.index)
 df = df.drop(columns=['coord'])
 df.head()
-
-Location_climate.Climate.unique()
 
 color_climate = {'Temperate' : "blue", 
                  'Grassland' : "yellow", 
