@@ -1,2 +1,9 @@
 # data folder
 data
+
+# python auto-files
+__pycache__
+
+# data file
+data_csv\weatherAUS_091224.csv
+data_csv/weatherAUS_091224.csv
