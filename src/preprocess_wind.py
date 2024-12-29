@@ -24,7 +24,7 @@ def preproc_windgustspeed(df):
 
     for i in df['climate'].unique():
         for j in df['RainTomorrow'].unique():
-            dict_wgs[i, j] (df[(df['climate'] == i) & (df['RainTomorrow'] == j)]['WindGustSpeed'].median())
+            dict_wgs[i, j] = (df[(df['climate'] == i) & (df['RainTomorrow'] == j)]['WindGustSpeed'].median())
 
 
     for index, i in df['WindGustSpeed'].items():
