@@ -110,4 +110,23 @@ fig.update_layout(
 
 fig.show()
 
+#### Calcul des distances entre stations
 
+import geopy.distance 
+
+df['coord'] = df['Location'].map(cities_coordinates)
+geopy.distance.distance(df['coord'] , df['coord'] )
+
+location = "Albury"
+distance_matrix = pd.DataFrame(index = df.Location.unique())
+
+for location in df.Location.unique():
+    for location2 in df.Location.unique():
+        distance_matrix.loc[location, location2] = \
+            geopy.distance.distance(cities_coordinates[location] , 
+                                    cities_coordinates[location2] ).km
+        
+    
+print(distance_matrix)
+
+distance_matrix.loc["Albury","Melbourne"]
