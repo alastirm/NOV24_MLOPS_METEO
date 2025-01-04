@@ -14,6 +14,15 @@ from sklearn.base import BaseEstimator, TransformerMixin
 # Bruno : je propose de changer en Climate avec C majuscule
 
 class wind_speed_transformer(BaseEstimator, TransformerMixin):
+    '''
+    cette classe permet de gérer les colonnes vents quantitatives.
+    elle prend en argument :
+    geo : climate, mais peut être changer par location,
+    col_select : windgustspeed, colonne quantitative sur laquelle on veut remplacer les Nan,
+    col_target : RainTomorrow
+    method : median, peut être remplacer par mean, mod, etc
+    '''
+
 
     def __init__(self, geo :str = 'climate', col_select : str = 'WindGustSpeed', col_target : str = 'RainTomorrow', method : str = 'median'):
         self.dict_wgs = {}
@@ -23,7 +32,7 @@ class wind_speed_transformer(BaseEstimator, TransformerMixin):
         self.method = method
 
     def fit(self, X, y = None):
-        # on récupère dans un dictionnaire la valeur median Windgustspeed des paires climate, raintomorrow
+        # on récupère dans un dictionnaire la valeur de method pour la col_select dont on veut gérer les Nan, avec clé tuple(geo, col_target)
 
         for i in X[self.geo].unique():
             for j in X[self.col_target].unique():
@@ -32,7 +41,7 @@ class wind_speed_transformer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        # on applique la valeur mediane à la paire climate, raintomorrow si elle est manquante
+        # on cherche le tuple(geo, col_target) et on applique la valeur de la method si c'est un Nan
 
         X[self.col_select] = X.apply(
                 lambda row: self.dict_wgs.get((row[self.geo], row[self.col_target]), row[self.col_select])
