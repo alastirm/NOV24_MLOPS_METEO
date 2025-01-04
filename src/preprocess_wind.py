@@ -85,8 +85,8 @@ class wind_dir_transformer(BaseEstimator, TransformerMixin):
         # sinon conserve la valeur de col_select
 
         X[self.col_select] = X.apply(
-            lambda row: self.dict_wdt[row[self.geo]][0] if pd.isna(row[self.col_select]) and row[self.col_target] == 'No'
-                  else self.dict_wdt[row[self.geo]][1] if pd.isna(row[self.col_select]) and row[self.col_target] == 'Yes'
+            lambda row: self.dict_wdt[row[self.geo]][0] if pd.isna(row[self.col_select]) and row[self.col_target] == 0
+                  else self.dict_wdt[row[self.geo]][1] if pd.isna(row[self.col_select]) and row[self.col_target] == 1
                   else row[self.col_select],
             axis=1)
 
