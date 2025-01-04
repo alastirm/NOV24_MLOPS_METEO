@@ -11,6 +11,7 @@ import init_data
 import preprocess_RainTomorrow
 import preprocess_Date
 import preprocess_Rainfall_RainToday  
+import preprocess_wind  
 
 # Autres fonctions ajoutées
 from functions_created import create_date_list
@@ -44,6 +45,9 @@ df = preprocess_RainTomorrow.preprocess_RainTomorrow(df)
 
 # preprocess Rainfall et RainToday
 df = preprocess_Rainfall_RainToday.preprocess_Rainfall_RainToday(df)
+
+# preprocess wind
+df = preprocess_wind.preproc_windgustspeed(df)
 
 
 print("après Preprocess : \n")

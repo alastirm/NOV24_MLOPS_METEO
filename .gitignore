@@ -1,6 +1,9 @@
 # data folder
 data
 
+# plot folder
+plots
+
 # python auto-files
 __pycache__
 

@@ -5,11 +5,11 @@ import pandas as pd
 # les na de la colonne RainTomorrow doivent être supprimer
 
 
-
 # df = pd.read_csv('../data/weatherAUS.csv')
 # df['climate'] = df['Location'].map(climate)
 # df = df.dropna(subset = 'RainTomorrow')
 
+# Bruno : je propose de changer en Climate avec C majuscule
 
 def preproc_windgustspeed(df):
 
@@ -22,14 +22,14 @@ def preproc_windgustspeed(df):
 
     dict_wgs = {}
 
-    for i in df['climate'].unique():
+    for i in df['Climate'].unique():
         for j in df['RainTomorrow'].unique():
-            dict_wgs[i, j] = (df[(df['climate'] == i) & (df['RainTomorrow'] == j)]['WindGustSpeed'].median())
+            dict_wgs[i, j] = (df[(df['Climate'] == i) & (df['RainTomorrow'] == j)]['WindGustSpeed'].median())
 
 
     for index, i in df['WindGustSpeed'].items():
         if pd.isna(i):
-            df.loc[index, 'WindGustSpeed']  = dict_wgs[df.loc[index, 'climate'], df.loc[index, 'RainTomorrow']]
+            df.loc[index, 'WindGustSpeed']  = dict_wgs[df.loc[index, 'Climate'], df.loc[index, 'RainTomorrow']]
 
 
     return df
