@@ -25,7 +25,7 @@ class wind_speed_transformer(BaseEstimator, TransformerMixin):
 
 
     def __init__(self, geo :str = 'climate', col_select : str = 'WindGustSpeed', col_target : str = 'RainTomorrow', method : str = 'median'):
-        self.dict_wgs = {}
+        self.dict_wst = {}
         self.geo = geo
         self.col_select = col_select
         self.col_target = col_target
@@ -36,7 +36,7 @@ class wind_speed_transformer(BaseEstimator, TransformerMixin):
 
         for i in X[self.geo].unique():
             for j in X[self.col_target].unique():
-                self.dict_wgs[i, j] = getattr(X[(X[self.geo] == i) & (X[self.col_target] == j)][self.col_select], self.method)()
+                self.dict_wst[i, j] = getattr(X[(X[self.geo] == i) & (X[self.col_target] == j)][self.col_select], self.method)()
 
         return self
 
@@ -44,7 +44,7 @@ class wind_speed_transformer(BaseEstimator, TransformerMixin):
         # on cherche le tuple(geo, col_target) et on applique la valeur de la method si c'est un Nan
 
         X[self.col_select] = X.apply(
-                lambda row: self.dict_wgs.get((row[self.geo], row[self.col_target]), row[self.col_select])
+                lambda row: self.dict_wst.get((row[self.geo], row[self.col_target]), row[self.col_select])
                 if pd.isna(row[self.col_select]) else row[self.col_select],
                 axis=1)
 
