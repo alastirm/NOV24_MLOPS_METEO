@@ -1,5 +1,7 @@
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
+from joblib import Parallel, delayed
+
 
 
 # prérequis à l'utilisation de la fonction
@@ -91,3 +93,20 @@ class wind_dir_transformer(BaseEstimator, TransformerMixin):
             axis=1)
 
         return X
+
+
+def apply_transformer(df):
+    # cette fonction final a besoin d'être finalisé car elle renvoie une liste avec 6 dataframe
+
+    transformers = [
+        wind_speed_transformer(col_select='WindGustSpeed'),
+        wind_speed_transformer(col_select='WindSpeed9am'),
+        wind_speed_transformer(col_select='WindSpeed3pm'),
+        wind_dir_transformer(col_select='WindGustDir'),
+        wind_dir_transformer(col_select='WindDir9am'),
+        wind_dir_transformer(col_select='WindDir3pm')
+    ]
+
+    df_transformed = Parallel(n_jobs=-1)(delayed(apply_transformer)(t, df) for t in transformers)
+
+    return df_transformed
