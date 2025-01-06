@@ -1,19 +1,8 @@
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from joblib import Parallel, delayed
+from sklearn.pipeline import Pipeline
 
 
-
-# prérequis à l'utilisation de la fonction
-# la colonne climate(minuscule) doit être ajoutée au df
-# les na de la colonne RainTomorrow doivent être supprimer
-
-
-# df = pd.read_csv('../data/weatherAUS.csv')
-# df['climate'] = df['Location'].map(climate)
-# df = df.dropna(subset = 'RainTomorrow')
-
-# Bruno : je propose de changer en Climate avec C majuscule
 
 class wind_speed_transformer(BaseEstimator, TransformerMixin):
     '''
@@ -82,6 +71,8 @@ class wind_dir_transformer(BaseEstimator, TransformerMixin):
                 if j in mat.index:
                     self.dict_wdt[i].append(mat.loc[j].idxmax())
 
+        return self
+
     def transform(self, X):
         # choisit la valeur dans dict_wdt si col_select est Nan et en fonction de la valeur de col_target
         # sinon conserve la valeur de col_select
@@ -98,15 +89,34 @@ class wind_dir_transformer(BaseEstimator, TransformerMixin):
 def apply_transformer(df):
     # cette fonction final a besoin d'être finalisé car elle renvoie une liste avec 6 dataframe
 
-    transformers = [
-        wind_speed_transformer(col_select='WindGustSpeed'),
-        wind_speed_transformer(col_select='WindSpeed9am'),
-        wind_speed_transformer(col_select='WindSpeed3pm'),
-        wind_dir_transformer(col_select='WindGustDir'),
-        wind_dir_transformer(col_select='WindDir9am'),
-        wind_dir_transformer(col_select='WindDir3pm')
-    ]
+    print('\n\ndébut du preprocessing des colonnes Wind')
+    # print('----> avant : ', df.isna().sum(), end = '\n\n')
 
-    df_transformed = Parallel(n_jobs=-1)(delayed(apply_transformer)(t, df) for t in transformers)
+    pipeline_wind = Pipeline([
+        ('windgustspeed_transformer', wind_speed_transformer(col_select='WindGustSpeed')),
+        ('windspeed9am_transformer', wind_speed_transformer(col_select='WindSpeed9am')),
+        ('windspeed3pm_transformer', wind_speed_transformer(col_select='WindSpeed3pm')),
+        ('windgustdir_tranformer', wind_dir_transformer(col_select = 'WindGustDir')),
+        ('windspeed9am_tranformer', wind_dir_transformer(col_select = 'WindDir9am')),
+        ('windspeed3pm_tranformer', wind_dir_transformer(col_select = 'WindDir3pm')),
+    ])
 
-    return df_transformed
+    pipeline_wind.fit_transform(df)
+
+    print('fin du preprocessing des colonnes Wind', end = '\n\n')
+    # print('----> après', df.isna().sum(), end = '\n\n')
+
+    return df
+
+
+if __name__ == "__main__":
+
+    df = pd.read_csv('../data/weatherAUS.csv')
+    climate = pd.read_csv('../data/Location_Climate_unique.csv').set_index('Location')['Climate'].to_dict()
+    df = pd.read_csv('../data/weatherAUS.csv')
+    df['climate'] = df['Location'].map(climate)
+    df = df.dropna(subset = 'RainTomorrow')
+    df = df[(df['Location'] != 'Newcastle') & (df['Location'] != 'Albany')]
+    df['RainTomorrow'] = df['RainTomorrow'].replace(['Yes', 'No'], [1, 0])
+
+    apply_transformer(df)
