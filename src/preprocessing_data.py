@@ -46,8 +46,8 @@ df = preprocess_RainTomorrow.preprocess_RainTomorrow(df)
 # preprocess Rainfall et RainToday
 df = preprocess_Rainfall_RainToday.preprocess_Rainfall_RainToday(df)
 
-# preprocess wind
-df = preprocess_wind.preproc_windgustspeed(df)
+# preprocess wind (ne fonctionne plus pour le moment)
+# df = preprocess_wind.preproc_windgustspeed(df)
 
 
 print("après Preprocess : \n")
@@ -60,7 +60,7 @@ print("Dimensions : ", df.shape)
 df_final = df.dropna()
 
 # On retire les colonnes Date et Location qui sont en index
-df_final = df_final.drop(columns=["Date","Location"])
+df_final = df_final.drop(columns=["Date", "Location"])
 
 # On sélectionne les features à garder
 
