@@ -73,7 +73,7 @@ def preprocess_RainTomorrow(df):
     df = df.drop(columns="RainTomorrow_new")
 
     # Suppression des Nas restants pour la variable cible RainTomorrow
-    df = df.dropna(subset = "RainTomorrow")
+    df = df.dropna(subset="RainTomorrow")
     
     return df
 

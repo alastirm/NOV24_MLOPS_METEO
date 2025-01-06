@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 
-
 # Fonction qui extrait la saison en Australie pour une variable au format Datetime
 # x doit contenir le mois
 
@@ -49,7 +48,7 @@ def encode_Date(df):
     # Year : dummies par saison
 
     # On fit l'encodeur sur les variables voulues
-    vars_to_encode = ["Season","Year","Month"]
+    vars_to_encode = ["Season", "Year", "Month"]
     encoder.fit(df[vars_to_encode])
 
     # On crée les dummies
@@ -60,9 +59,9 @@ def encode_Date(df):
 
     ## On ajoute les variables encodées au df de base et on supprime les variables d'origine
     df = pd.merge(df, var_enc,
-                  left_index = True, right_index=True)
+                  left_index=True, right_index=True)
     
-    df =  df.drop(columns = vars_to_encode)
+    df =  df.drop(columns=vars_to_encode)
     return df
 
 
