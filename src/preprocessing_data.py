@@ -5,6 +5,17 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import RobustScaler, MinMaxScaler
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
+from sklearn.svm import SVC
+from sklearn.feature_selection import RFE, SelectKBest, f_classif
+
+from imblearn.over_sampling import SMOTE
+from sklearn.linear_model import LogisticRegression
+from imblearn.metrics import classification_report_imbalanced, geometric_mean_score
+
+
+
+
+
 
 # import de la fonction initialize_data_weatherAU(data_dir)
 import init_data
@@ -102,7 +113,7 @@ X_train, X_test, y_train, y_test = \
 # Exemple en important la fonction encode_data de encode_functions.py
 # On crée des dummies pour la saison, l'année, le mois avec le OneHotEncoder
 
-vars_to_encode = ["Season", "Year", "Month"] 
+vars_to_encode = ["Season", "Year", "Month"]
 X_train.head()
 
 X_train, X_test = encode_functions.encode_data(X_train = X_train,
@@ -118,7 +129,7 @@ vars_to_scale  = ['Rainfall']
 # On fit sur Xtrain
 scaler = MinMaxScaler().fit(X_train[vars_to_scale])
 
-X_train_scaled = X_train 
+X_train_scaled = X_train
 X_train_scaled[vars_to_scale] = scaler.transform(X_train[vars_to_scale])
 X_test_scaled = X_test
 X_test_scaled[vars_to_scale] = scaler.transform(X_test[vars_to_scale])
@@ -136,8 +147,6 @@ y_test.to_csv("../data_saved/y_test_final.csv")
 # Gestion du déséquilibre et resampling (A discuter)
 
 # On utilise le rééchantillonnage pour traiter le déséquilibre de la variable cible -> SMOTE
-from imblearn.over_sampling import SMOTE
-
 print('Classes échantillon initial :', dict(pd.Series(target).value_counts()))
 
 smo = SMOTE()
@@ -146,10 +155,7 @@ print('Classes échantillon SMOTE :', dict(pd.Series(y_sm).value_counts()))
 
 # Fin du preprocessing : on peut faire un rapide feature selection
 
-from sklearn.feature_selection import RFE
-from sklearn.svm import SVC
-from sklearn.feature_selection import SelectKBest
-from sklearn.feature_selection import f_classif
+
 
 k_select = len(X_sm.columns)
 
@@ -163,8 +169,6 @@ X_test = selector.transform(X_test)
 
 
 # test un modèle basique
-from sklearn.linear_model import LogisticRegression
-from imblearn.metrics import classification_report_imbalanced, geometric_mean_score
 
 lr = LogisticRegression(max_iter = 1000)
 lr.fit(X_sm, y_sm, )
