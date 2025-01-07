@@ -2,20 +2,18 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
 
-
-
 class wind_speed_transformer(BaseEstimator, TransformerMixin):
     '''
     cette classe permet de gérer les colonnes vents quantitatives.
     elle prend en argument :
-    geo : climate, mais peut être changer par location,
+    geo : Climate, mais peut être changer par location,
     col_select : windgustspeed, colonne quantitative sur laquelle on veut remplacer les Nan,
     col_target : RainTomorrow
     method : median, peut être remplacer par mean, mod, etc
     '''
 
 
-    def __init__(self, geo :str = 'climate', col_select : str = 'WindGustSpeed', col_target : str = 'RainTomorrow', method : str = 'median'):
+    def __init__(self, geo :str = 'Climate', col_select : str = 'WindGustSpeed', col_target : str = 'RainTomorrow', method : str = 'median'):
 
         self.dict_wst = {}
         self.geo = geo
@@ -109,14 +107,14 @@ def apply_transformer(df):
     return df
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    df = pd.read_csv('../data/weatherAUS.csv')
-    climate = pd.read_csv('../data/Location_Climate_unique.csv').set_index('Location')['Climate'].to_dict()
-    df = pd.read_csv('../data/weatherAUS.csv')
-    df['climate'] = df['Location'].map(climate)
-    df = df.dropna(subset = 'RainTomorrow')
-    df = df[(df['Location'] != 'Newcastle') & (df['Location'] != 'Albany')]
-    df['RainTomorrow'] = df['RainTomorrow'].replace(['Yes', 'No'], [1, 0])
+#     df = pd.read_csv('../data/weatherAUS.csv')
+#     climate = pd.read_csv('../data/Location_Climate_unique.csv').set_index('Location')['Climate'].to_dict()
+#     df = pd.read_csv('../data/weatherAUS.csv')
+#     df['Climate'] = df['Location'].map(climate)
+#     df = df.dropna(subset = 'RainTomorrow')
+#     df = df[(df['Location'] != 'Newcastle') & (df['Location'] != 'Albany')]
+#     df['RainTomorrow'] = df['RainTomorrow'].replace(['Yes', 'No'], [1, 0])
 
-    apply_transformer(df)
+#     apply_transformer(df)
