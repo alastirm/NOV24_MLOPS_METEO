@@ -3,6 +3,8 @@ import numpy as np
 
 import functions_created
 
+
+
 def preprocess_Rainfall_RainToday(df):
     # discrétisation variable RainToday
     df['RainToday'] = df['RainToday'].replace(['Yes', 'No'], [1, 0])

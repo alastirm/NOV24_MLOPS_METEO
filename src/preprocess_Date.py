@@ -36,32 +36,3 @@ def preprocess_Date(df):
     # Ajout de la variable Season
     df["Season"] = df["Date"].apply(lambda x: get_season_AU(x))
     return df
-
-
-def encode_Date(df):
-
-    # Encodage des variables 
-    encoder = OneHotEncoder(handle_unknown='ignore', sparse_output=False,  dtype='int')
-    
-    # Saison : dummies par saison
-    # Mois : dummies par saison
-    # Year : dummies par saison
-
-    # On fit l'encodeur sur les variables voulues
-    vars_to_encode = ["Season", "Year", "Month"]
-    encoder.fit(df[vars_to_encode])
-
-    # On crée les dummies
-    var_enc = encoder.transform(df[vars_to_encode])
-    var_enc = pd.DataFrame(var_enc, 
-                           columns= encoder.get_feature_names_out(), 
-                           index = df.index)
-
-    ## On ajoute les variables encodées au df de base et on supprime les variables d'origine
-    df = pd.merge(df, var_enc,
-                  left_index=True, right_index=True)
-    
-    df =  df.drop(columns=vars_to_encode)
-    return df
-
-

@@ -7,6 +7,10 @@ import plotly.graph_objects as go
 from scipy.stats  import chi2_contingency
 from datetime import timedelta
 
+# Ce script comporte différentes fonctions annexes utiles 
+
+# Fonction qui crée la liste des dates sur la période d'étude
+
 def create_date_list(df):
     # création de la liste des dates sur l'ensemble de la période ####
     
@@ -28,59 +32,6 @@ def create_date_list(df):
     df_dates["Location"] = "Complete serie"
 
     return df_dates, date_list
-
-
-def analyse_variable_binaire(variable_name, target_name, base):
-
-    print("Répartition de la variable: ", end="\n\n")
-
-    print(base[variable_name].value_counts(normalize=True, dropna=False),
-          end="\n\n")
-
-    print("Matrice de contingence: ", end="\n\n")
-
-    print(pd.crosstab(base[variable_name], base[target_name], normalize='index'))
-
-    sns.countplot(x=variable_name, data=base)
-
-    plt.title(f'Répartition de {variable_name} \n', fontsize=20)
-
-    plt.show()
-
-
-def analyse_variable_quantitative(variable_name, base):
-
-    print()
-
-    print("Statistiques de la variable: ", end="\n\n")
-
-    print(base[variable_name].describe(), end="\n\n")
-
-    sns.boxplot(x=variable_name, data=base)
-
-    plt.title(f'Distribution de {variable_name} \n', fontsize=20)
-
-    plt.show()
-
-    sns.histplot(x=variable_name, data=base,)
-
-    plt.title(f'Distribution de {variable_name} \n', fontsize=20)
-
-    plt.show()
-
-
-def chi2_test(variable1, variable2, base):
-
-    # Stat et p_value du test
-    stat, p = chi2_contingency(pd.crosstab(
-    base[variable1], base[variable2]))[:2]
-    # V de Cramer
-    V_Cramer = np.sqrt(stat/pd.crosstab( base[variable1],base[variable2]).values.sum())
-    print()
-    print("Le V de cramer est égal à : ", V_Cramer, end="\n\n")
-    print("La p-valeur du test de Chi-Deux est égal à : ", p)
-
-    return stat, p, V_Cramer
 
 
 import geopy.distance 
@@ -152,7 +103,9 @@ def create_distance_matrix():
         
     return dist_mat
 
-
+# Fonction qui complète une variable à partir des données de la station la plus proche
+# distance_max : distance maximale pour laquelle on recherche une station en km
+# Le Na est remplacé si il existe une valeur pour la même date dans la station la plus proche
 
 def complete_na_neareststation(df, variable, distance_max):
     dist_mat = create_distance_matrix()
@@ -197,3 +150,88 @@ def complete_na_neareststation(df, variable, distance_max):
     
     print(total_count, "Valeurs récupérées")
     return df_na_variable
+
+# cercle de corrélation d'une PCA pour deux axes et toutes les features d'un df
+
+def draw_correlation_circle(df_charges_factorielles, 
+                            pca, 
+                            arrow_length=0.1, 
+                            label_rotation=0, 
+                            Axes_names=['Axe 1', 'Axe 2']):
+    
+    fig, ax = plt.subplots(figsize=(8, 8))
+    for i, var in enumerate(df_charges_factorielles.columns):
+        x = df_charges_factorielles.loc[Axes_names[0], var]
+        y = df_charges_factorielles.loc[Axes_names[1], var]
+        ax.arrow(0, 0, x, y, head_width=arrow_length, 
+                 head_length=arrow_length, fc='gray', ec='gray')
+        ax.text(x*1.15, y*1.15, var, ha='center', va='center', 
+                rotation=label_rotation, fontsize=9)
+    circle = plt.Circle((0, 0), 1, facecolor='none', edgecolor='black')
+    ax.add_artist(circle)
+    ax.set_xlim(-1.1, 1.1)
+    ax.set_ylim(-1.1, 1.1)
+    ax.set_aspect('equal', adjustable='box')
+    ax.set_xlabel(Axes_names[0])
+    ax.set_ylabel(Axes_names[1])
+    ax.set_title('Cercle des Corrélations')
+    plt.grid()
+    plt.show()
+
+
+# Analyse de la distribution d'une variable binaire en fonction de la target
+
+def analyse_variable_binaire(variable_name, target_name, base):
+
+    print("Répartition de la variable: ", end="\n\n")
+
+    print(base[variable_name].value_counts(normalize=True, dropna=False),
+          end="\n\n")
+
+    print("Matrice de contingence: ", end="\n\n")
+
+    print(pd.crosstab(base[variable_name], base[target_name], normalize='index'))
+
+    sns.countplot(x=variable_name, data=base)
+
+    plt.title(f'Répartition de {variable_name} \n', fontsize=20)
+
+    plt.show()
+
+# Analyse de la distribution d'une variable quantitative
+
+def analyse_variable_quantitative(variable_name, base):
+
+    print()
+
+    print("Statistiques de la variable: ", end="\n\n")
+
+    print(base[variable_name].describe(), end="\n\n")
+
+    sns.boxplot(x=variable_name, data=base)
+
+    plt.title(f'Distribution de {variable_name} \n', fontsize=20)
+
+    plt.show()
+
+    sns.histplot(x=variable_name, data=base,)
+
+    plt.title(f'Distribution de {variable_name} \n', fontsize=20)
+
+    plt.show()
+
+# Test de Chi2 entre deux variables qualitatives et calcul du V_cramer
+
+def chi2_test(variable1, variable2, base):
+
+    # Stat et p_value du test
+    stat, p = chi2_contingency(pd.crosstab(
+    base[variable1], base[variable2]))[:2]
+    # V de Cramer
+    V_Cramer = np.sqrt(stat/pd.crosstab( base[variable1],base[variable2]).values.sum())
+    print()
+    print("Le V de cramer est égal à : ", V_Cramer, end="\n\n")
+    print("La p-valeur du test de Chi-Deux est égal à : ", p)
+
+    return stat, p, V_Cramer
+

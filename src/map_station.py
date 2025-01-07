@@ -129,4 +129,4 @@ for location in df.Location.unique():
     
 print(distance_matrix)
 
-distance_matrix.loc["Albury","Melbourne"]
+distance_matrix.loc["Albury", "Melbourne"]

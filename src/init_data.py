@@ -22,7 +22,7 @@ def initialize_data_weatherAU(data_dir):
     # discrétisation variable RainToday -> à mettre dans preprocess
     df['RainToday'] = df['RainToday'].replace(['Yes', 'No'], [1, 0])
 
-     # Met la date en indice avec la station mais sans retirer les colonnes pour le moment
+    # # Met la date en indice avec la station mais sans retirer les colonnes pour le moment
     df = df.set_index(["Location", "Date"], drop=False)
     df = df.reindex(df.index.rename({"Location" : "id_Location", "Date" : "id_Date"}))
     
