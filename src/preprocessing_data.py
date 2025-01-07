@@ -22,7 +22,7 @@ import encode_functions
 import functions_created
 
 # chargement des données
-data_dir = "../data_csv/weatherAUS_091224.csv"
+data_dir = "../data/weatherAUS.csv"
 df = init_data.initialize_data_weatherAU(data_dir)
 
 # Vérification chargement
@@ -31,17 +31,19 @@ df.describe()
 
 # print informations
 
+nas_before_preprocess= df.isna().sum()
 print("Avant Preprocess : \n")
 print("Nombre de Nas")
-print(df.isna().sum())
+print(nas_before_preprocess)
 
-print("Dimensions : ", df.shape)
+dim_before_preprocess = df.shape
+print("Dimensions : ", dim_before_preprocess)
+
 
 # gestion des NAs et preprocessing des variables
 
-# On supprime les colonnes Evaporation et Sunshine
-df = df.drop(columns=["Evaporation", 'Sunshine'])
-
+# On supprime les colonnes Evaporation, Sunshine et Cloud
+df = df.drop(columns=["Evaporation", 'Sunshine','Cloud9am','Cloud3pm'])
 
 # preprocess Date
 df = preprocess_Date.preprocess_Date(df)
@@ -60,11 +62,21 @@ df = preprocess_wind.apply_transformer(df)
 
 # dist_mat = functions_created.create_distance_matrix()
 
-print("après Preprocess : \n")
-print("Nombre de Nas")
-print(df.isna().sum())
+# affichage Nas après preprocessing
 
-print("Dimensions : ", df.shape)
+nas_after_preprocess = df.isna().sum()
+nas_after_preprocess = pd.merge(nas_before_preprocess,
+                                nas_after_preprocess,
+                                left_index=True,
+                                right_index=True)
+
+
+print("Après Preprocess : \n")
+print("Nombre de Nas")
+print(nas_after_preprocess)
+
+dim_before_preprocess = df.shape
+print("Dimensions : ", dim_before_preprocess)
 
 # On retire les derniers Nas (à faire après avoir géré toutes les colonnes)
 df_final = df.dropna()
@@ -116,10 +128,10 @@ print(X_train_scaled[vars_to_scale].describe())
 print(X_test_scaled[vars_to_scale].describe())
 
 # Sauvegarde fin preprocessing
-X_train_scaled.to_csv("../data_csv/X_train_final.csv")
-X_test_scaled.to_csv("../data_csv/X_test_final.csv")
-y_train.to_csv("../data_csv/y_train_final.csv")
-y_test.to_csv("../data_csv/y_test_final.csv")
+X_train_scaled.to_csv("../data_saved/X_train_final.csv")
+X_test_scaled.to_csv("../data_saved/X_test_final.csv")
+y_train.to_csv("../data_saved/y_train_final.csv")
+y_test.to_csv("../data_saved/y_test_final.csv")
 
 # Gestion du déséquilibre et resampling (A discuter)
 
