@@ -11,7 +11,7 @@ def initialize_data_weatherAU(data_dir):
     df = pd.read_csv(filepath_or_buffer=data_dir, sep=",")
 
     # Ajout de la variable climate
-    Location_climate = pd.read_csv("../data_csv/climat_location_unique.csv")
+    Location_climate = pd.read_csv("../data/Location_climate_unique.csv")
     df = pd.merge(df, Location_climate,  on="Location", how="left")
 
     # Transforme la date en datetime
