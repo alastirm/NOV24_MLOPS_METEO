@@ -12,11 +12,6 @@ from imblearn.over_sampling import SMOTE
 from sklearn.linear_model import LogisticRegression
 from imblearn.metrics import classification_report_imbalanced, geometric_mean_score
 
-
-
-
-
-
 # import de la fonction initialize_data_weatherAU(data_dir)
 import init_data
 
@@ -42,7 +37,7 @@ df.describe()
 
 # print informations
 
-nas_before_preprocess= df.isna().sum()
+nas_before_preprocess= pd.DataFrame(df.isna().sum())
 print("Avant Preprocess : \n")
 print("Nombre de Nas")
 print(nas_before_preprocess)
@@ -75,19 +70,21 @@ df = preprocess_wind.apply_transformer(df)
 
 # affichage Nas après preprocessing
 
-nas_after_preprocess = df.isna().sum()
+nas_after_preprocess = pd.DataFrame(df.isna().sum())
 nas_after_preprocess = pd.merge(nas_before_preprocess,
                                 nas_after_preprocess,
                                 left_index=True,
                                 right_index=True)
 
+nas_after_preprocess.columns=['Avant','Après']
 
 print("Après Preprocess : \n")
 print("Nombre de Nas")
 print(nas_after_preprocess)
 
-dim_before_preprocess = df.shape
-print("Dimensions : ", dim_before_preprocess)
+dim_after_preprocess = df.shape
+print("Dimensions avant : ", dim_before_preprocess)
+print("Dimensions après : ", dim_after_preprocess)
 
 # On retire les derniers Nas (à faire après avoir géré toutes les colonnes)
 df_final = df.dropna()
@@ -113,7 +110,7 @@ X_train, X_test, y_train, y_test = \
 # Exemple en important la fonction encode_data de encode_functions.py
 # On crée des dummies pour la saison, l'année, le mois avec le OneHotEncoder
 
-vars_to_encode = ["Season", "Year", "Month"]
+vars_to_encode = ["Season", "Year", "Month"] 
 X_train.head()
 
 X_train, X_test = encode_functions.encode_data(X_train = X_train,
@@ -129,7 +126,7 @@ vars_to_scale  = ['Rainfall']
 # On fit sur Xtrain
 scaler = MinMaxScaler().fit(X_train[vars_to_scale])
 
-X_train_scaled = X_train
+X_train_scaled = X_train 
 X_train_scaled[vars_to_scale] = scaler.transform(X_train[vars_to_scale])
 X_test_scaled = X_test
 X_test_scaled[vars_to_scale] = scaler.transform(X_test[vars_to_scale])
@@ -143,35 +140,3 @@ X_train_scaled.to_csv("../data_saved/X_train_final.csv")
 X_test_scaled.to_csv("../data_saved/X_test_final.csv")
 y_train.to_csv("../data_saved/y_train_final.csv")
 y_test.to_csv("../data_saved/y_test_final.csv")
-
-# Gestion du déséquilibre et resampling (A discuter)
-
-# On utilise le rééchantillonnage pour traiter le déséquilibre de la variable cible -> SMOTE
-print('Classes échantillon initial :', dict(pd.Series(target).value_counts()))
-
-smo = SMOTE()
-X_sm, y_sm = smo.fit_resample(X_train, y_train)
-print('Classes échantillon SMOTE :', dict(pd.Series(y_sm).value_counts()))
-
-# Fin du preprocessing : on peut faire un rapide feature selection
-
-
-
-k_select = len(X_sm.columns)
-
-# On garde la moitié des variables environ avec un scoring de fisher
-selector = SelectKBest(f_classif, k=20)
-selector = selector.fit(X_sm, y_sm)
-selector.get_feature_names_out()
-
-X_sm = selector.transform(X_sm)
-X_test = selector.transform(X_test)
-
-
-# test un modèle basique
-
-lr = LogisticRegression(max_iter = 1000)
-lr.fit(X_sm, y_sm, )
-y_pred = lr.predict(X_test)
-print(pd.crosstab(y_test, y_pred))
-print(classification_report_imbalanced(y_test, y_pred))

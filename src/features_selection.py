@@ -21,10 +21,10 @@ import functions_created
 
 # Chargement données issues du preprocessing
 
-X_train = pd.read_csv("../data_csv/X_train_final.csv", index_col=["id_Location","id_Date"])
-X_test = pd.read_csv("../data_csv/X_test_final.csv", index_col=["id_Location","id_Date"])
-y_train = pd.read_csv("../data_csv/y_train_final.csv", index_col=["id_Location","id_Date"])
-y_test = pd.read_csv("../data_csv/y_test_final.csv", index_col=["id_Location","id_Date"]) 
+X_train = pd.read_csv("../data_saved/X_train_final.csv", index_col=["id_Location","id_Date"])
+X_test = pd.read_csv("../data_saved/X_test_final.csv", index_col=["id_Location","id_Date"])
+y_train = pd.read_csv("../data_saved/y_train_final.csv", index_col=["id_Location","id_Date"])
+y_test = pd.read_csv("../data_saved/y_test_final.csv", index_col=["id_Location","id_Date"]) 
 
 X_train.head()
 X_test.head()
