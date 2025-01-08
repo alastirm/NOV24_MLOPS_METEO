@@ -1,4 +1,12 @@
+import sys
+import time
+import threading
+import warnings
+import emoji
+
 import pandas as pd
+import numpy as np
+
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
 
@@ -84,11 +92,76 @@ class wind_dir_transformer(BaseEstimator, TransformerMixin):
         return X
 
 
-def apply_transformer(df):
-    # cette fonction final a besoin d'être finalisé car elle renvoie une liste avec 6 dataframe
+class compass_dir_encoder(BaseEstimator, TransformerMixin):
+    '''on a choisi d'encoder les directions suivant en créant un encoder trigonométrique,
+    cet encoder permet de conserver la notion d'angle propre au point cardinaux.'''
 
-    print('\n\ndébut du preprocessing des colonnes Wind')
+    def __init__(self, col_select : str = 'WindGustDir'):
+        self.cardinal_mapping = {
+            'N': 0,
+            'NNE': 22.5,
+            'NE': 45,
+            'ENE': 67.5,
+            'E': 90,
+            'ESE': 112.5,
+            'SE': 135,
+            'SSE': 157.5,
+            'S': 180,
+            'SSW': 202.5,
+            'SW': 225,
+            'WSW': 247.5,
+            'W': 270,
+            'WNW': 292.5,
+            'NW': 315,
+            'NNW': 337.5,
+        }
+
+        self.col_select = col_select
+
+
+    def fit(self, X, y=None):
+
+        return self
+
+
+    def transform(self, X):
+
+        X[self.col_select + '_cos'] = X[self.col_select].apply(lambda x : np.cos(np.radians(self.cardinal_mapping[x])))
+        X[self.col_select + '_sin'] = X[self.col_select].apply(lambda x : np.sin(np.radians(self.cardinal_mapping[x])))
+
+        return X
+
+
+
+
+######################################################
+######################################################
+
+
+
+def spinner():
+    spinner_chars = ['|', '/', '-', '\\']
+    while True:
+        for char in spinner_chars:
+            sys.stdout.write(f'\r{char}{char}{char}{char}{char}{char}{char}{char}{char}{char}{char}')
+            sys.stdout.flush()
+            time.sleep(0.1)  # Délai pour animer le spinner
+
+
+
+def pipeline_wind_function(df):
+
+    warnings.filterwarnings('ignore')
+
+    print('\n\ndébut du preprocessing des colonnes Wind...')
     # print('----> avant : ', df.isna().sum(), end = '\n\n')
+
+    spinner_thread = threading.Thread(target=spinner)
+    spinner_thread.daemon = True  # Permet au thread de se terminer quand le programme se termine
+    spinner_thread.start()
+
+    df = df[(df['Location'] != 'Newcastle') & (df['Location'] != 'Albany')]
+
 
     pipeline_wind = Pipeline([
         ('windgustspeed_transformer', wind_speed_transformer(col_select='WindGustSpeed')),
@@ -97,12 +170,17 @@ def apply_transformer(df):
         ('windgustdir_tranformer', wind_dir_transformer(col_select = 'WindGustDir')),
         ('windspeed9am_tranformer', wind_dir_transformer(col_select = 'WindDir9am')),
         ('windspeed3pm_tranformer', wind_dir_transformer(col_select = 'WindDir3pm')),
+        ('windgustdir_trigo_encoder', compass_dir_encoder(col_select = "WindGustDir")),
+        ('winddir9am_trigo_encod', compass_dir_encoder(col_select = "WindDir9am")),
+        ('winddir3pm_trigo_encod', compass_dir_encoder(col_select = "WindDir3pm"))
     ])
 
     pipeline_wind.fit_transform(df)
 
-    print('fin du preprocessing des colonnes Wind', end = '\n\n')
-    # print('----> après', df.isna().sum(), end = '\n\n')
+    df.drop(columns = ['WindGustDir', 'WindDir9am', 'WindDir3pm'], inplace = True)
+
+    print(emoji.emojize('\n ...fin du preprocessing des colonnes Wind :thumbs_up::thumbs_up::thumbs_up:'), end = '\n\n')
+    # print('----> après', df.isna().sum())
 
     return df
 
@@ -117,4 +195,4 @@ def apply_transformer(df):
 #     df = df[(df['Location'] != 'Newcastle') & (df['Location'] != 'Albany')]
 #     df['RainTomorrow'] = df['RainTomorrow'].replace(['Yes', 'No'], [1, 0])
 
-#     apply_transformer(df)
+#     pipeline_wind_function(df)
