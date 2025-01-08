@@ -3,8 +3,6 @@ import numpy as np
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import RobustScaler, MinMaxScaler
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC
 from sklearn.feature_selection import RFE, SelectKBest, f_classif
 
@@ -61,10 +59,8 @@ df = preprocess_RainTomorrow.preprocess_RainTomorrow(df)
 
 # preprocess Rainfall et RainToday
 
-# Ce drop est indispensable pour que le transformer windDir fonctionne
-df = df[(df['Location'] != 'Newcastle') & (df['Location'] != 'Albany')]
 # preprocess wind
-df = preprocess_wind.apply_transformer(df)
+df = preprocess_wind.pipeline_wind_function(df)
 
 # dist_mat = functions_created.create_distance_matrix()
 
@@ -110,7 +106,7 @@ X_train, X_test, y_train, y_test = \
 # Exemple en important la fonction encode_data de encode_functions.py
 # On crée des dummies pour la saison, l'année, le mois avec le OneHotEncoder
 
-vars_to_encode = ["Season", "Year", "Month"] 
+vars_to_encode = ["Season", "Year", "Month"]
 X_train.head()
 
 X_train, X_test = encode_functions.encode_data(X_train = X_train,
@@ -126,7 +122,7 @@ vars_to_scale  = ['Rainfall']
 # On fit sur Xtrain
 scaler = MinMaxScaler().fit(X_train[vars_to_scale])
 
-X_train_scaled = X_train 
+X_train_scaled = X_train
 X_train_scaled[vars_to_scale] = scaler.transform(X_train[vars_to_scale])
 X_test_scaled = X_test
 X_test_scaled[vars_to_scale] = scaler.transform(X_test[vars_to_scale])
