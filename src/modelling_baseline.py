@@ -12,6 +12,8 @@ from sklearn.model_selection import train_test_split, KFold, GridSearchCV
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import LinearRegression, Lasso
 from sklearn.ensemble import RandomForestClassifier
+import xgboost as xgb
+import shap
 
 # métriques 
 from imblearn.metrics import classification_report_imbalanced, geometric_mean_score
@@ -116,3 +118,28 @@ lr_loc.fit(X_sm_loc, y_sm_loc)
 y_pred_loc = lr.predict(X_test_loc)
 print(pd.crosstab(y_test_loc["RainTomorrow"], y_pred_loc))
 print(classification_report_imbalanced(y_test_loc["RainTomorrow"], y_pred_loc))
+
+
+# Pour le fun, XGboost et valeurs de shapley
+
+xgb_clf = xgb.XGBClassifier()
+xgb_clf.fit(X_train, y_train)
+
+y_pred_xgb = xgb_clf.predict(X_test)
+print(classification_report(y_test["RainTomorrow"], y_pred_xgb))
+
+explainer = shap.Explainer(xgb_clf)
+shap_values = explainer.shap_values(X_train)
+
+shap.summary_plot(shap_values, X_train, plot_type='bar')
+
+xgb_clf_sm = xgb.XGBClassifier()
+xgb_clf_sm.fit(X_sm, y_sm)
+
+y_pred_xgb_sm = xgb_clf_sm.predict(X_test)
+print(classification_report(y_test["RainTomorrow"], y_pred_xgb_sm))
+
+explainer_sm = shap.Explainer(xgb_clf_sm)
+shap_values_sm = explainer_sm.shap_values(X_train)
+
+shap.summary_plot(shap_values_sm, X_sm, plot_type='bar')
