@@ -64,8 +64,19 @@ df.isna().sum()
 df = preprocess_temperatures.preprocess_temperature_mean(df, columns=["MinTemp", "MaxTemp", "Temp9am", "Temp3pm"])
 df.isna().sum()
 
-# preprocess pressures et humidities
-df = preprocess_pressure_humidity.remplir_na(df, columns=["Humidity9am", "Humidity3pm", "Pressure9am", "Pressure3pm"])
+
+# preprocess pressures et humidities 
+# J'ai du ajouter un réindexage car je ne sais pas pourquoi mais la 
+# fonction remplissage_na_voisinnage modifie les index et ajoute Location en index
+
+columns=["Humidity9am", "Humidity3pm", "Pressure9am", "Pressure3pm"]
+for col in columns:
+    df = df.groupby("Location").apply(preprocess_pressure_humidity.remplissage_na_voisinnage, column=col, global_data=df[col])
+    print(df.index)
+    df = df.set_index(["Location", "Date"], drop=False)
+    df = df.reindex(df.index.rename({"Location" : "id_Location", "Date" : "id_Date"}))
+
+#df = preprocess_pressure_humidity.remplir_na(df, columns=["Humidity9am", "Humidity3pm", "Pressure9am", "Pressure3pm"])
 df.isna().sum()
 
 # dist_mat = functions_created.create_distance_matrix()
