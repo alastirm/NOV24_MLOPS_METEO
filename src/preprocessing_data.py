@@ -13,6 +13,7 @@ import preprocess_Date
 import preprocess_Rainfall_RainToday
 import preprocess_wind
 import preprocess_temperatures
+import preprocess_pressure_humidity
 
 # Fonctions encodage
 import encode_functions
@@ -61,6 +62,10 @@ df.isna().sum()
 
 # preprocess temperatures
 df = preprocess_temperatures.preprocess_temperature_mean(df, columns=["MinTemp", "MaxTemp", "Temp9am", "Temp3pm"])
+df.isna().sum()
+
+# preprocess pressures et humidities
+df = preprocess_pressure_humidity.remplir_na(df, columns=["Humidity9am", "Humidity3pm", "Pressure9am", "Pressure3pm"])
 df.isna().sum()
 
 # dist_mat = functions_created.create_distance_matrix()
