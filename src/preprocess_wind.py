@@ -93,10 +93,9 @@ class wind_dir_transformer(BaseEstimator, TransformerMixin):
 
 
 class compass_dir_encoder(BaseEstimator, TransformerMixin):
-    '''on a choisi d'encoder les directions suivant en créant un encoder trigonométrique,
-    cet encoder permet de conserver la notion d'angle propre au point cardinaux.'''
 
     def __init__(self, col_select : str = 'WindGustDir'):
+
         self.cardinal_mapping = {
             'N': 0,
             'NNE': 22.5,
@@ -117,17 +116,24 @@ class compass_dir_encoder(BaseEstimator, TransformerMixin):
         }
 
         self.col_select = col_select
+        self.cardinal_cos_sin = {}
 
 
     def fit(self, X, y=None):
+
+        for direction, angle in self.cardinal_mapping.items():
+            cos_a = np.round(np.cos(np.radians(angle)), 6)
+            sin_a = np.round(np.sin(np.radians(angle)), 6)
+
+            self.cardinal_cos_sin[direction] = (cos_a, sin_a)
 
         return self
 
 
     def transform(self, X):
 
-        X[self.col_select + '_cos'] = X[self.col_select].apply(lambda x : np.cos(np.radians(self.cardinal_mapping[x])))
-        X[self.col_select + '_sin'] = X[self.col_select].apply(lambda x : np.sin(np.radians(self.cardinal_mapping[x])))
+        X[self.col_select + '_cos'] = X[self.col_select].apply(lambda x : self.cardinal_cos_sin[x][0])
+        X[self.col_select + '_sin'] = X[self.col_select].apply(lambda x : self.cardinal_cos_sin[x][1])
 
         return X
 
