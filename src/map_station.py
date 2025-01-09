@@ -9,7 +9,7 @@ import plotly.express as px
 import init_data
 
 # chargement des données
-data_dir = "../data_csv/weatherAUS_091224.csv"
+data_dir = "../data/weatherAUS.csv"
 df = init_data.initialize_data_weatherAU(data_dir)
 
 # Ajout des coordonnées
