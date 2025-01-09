@@ -145,8 +145,7 @@ def spinner():
         for char in spinner_chars:
             sys.stdout.write(f'\r{char}{char}{char}{char}{char}{char}{char}{char}{char}{char}{char}')
             sys.stdout.flush()
-            time.sleep(0.1)  # Délai pour animer le spinner
-
+            time.sleep(0.1)
 
 
 def pipeline_wind_function(df):
@@ -157,7 +156,7 @@ def pipeline_wind_function(df):
     # print('----> avant : ', df.isna().sum(), end = '\n\n')
 
     spinner_thread = threading.Thread(target=spinner)
-    spinner_thread.daemon = True  # Permet au thread de se terminer quand le programme se termine
+    spinner_thread.daemon = True
     spinner_thread.start()
 
     df = df[(df['Location'] != 'Newcastle') & (df['Location'] != 'Albany')]
