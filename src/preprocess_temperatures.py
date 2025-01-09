@@ -24,10 +24,10 @@ def preprocess_temperature_mean(df, columns=["MinTemp", "MaxTemp", "Temp9am", "T
         df[col] = df[col].interpolate(method="linear")
     return df
 
-# Appeler les fonctions de preprocessing
-df_median_location = preprocess_temperatures_median_location(df.copy())
-df_median_climate = preprocess_temperatures_median_climate(df.copy())
-df_mean = preprocess_temperature_mean(df.copy())
+# # Appeler les fonctions de preprocessing
+# df_median_location = preprocess_temperatures_median_location(df.copy())
+# df_median_climate = preprocess_temperatures_median_climate(df.copy())
+# df_mean = preprocess_temperature_mean(df.copy())
 
 # Vérification des méthodes
 def verification_methodes(df, df_median1, df_median2, df_mean, columns=["MinTemp", "MaxTemp", "Temp9am", "Temp3pm"]):
@@ -60,4 +60,4 @@ def verification_methodes(df, df_median1, df_median2, df_mean, columns=["MinTemp
     print(df_mean[columns].isnull().mean() * 100, "\n")
 
 # Appeler la fonction de vérification
-verification_methodes(df, df_median_location, df_median_climate, df_mean)
+# verification_methodes(df, df_median_location, df_median_climate, df_mean)

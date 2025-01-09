@@ -12,9 +12,12 @@ from sklearn.model_selection import train_test_split, KFold, GridSearchCV
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import LinearRegression, Lasso
 from sklearn.ensemble import RandomForestClassifier
+import xgboost as xgb
+import shap
 
 # métriques 
 from imblearn.metrics import classification_report_imbalanced, geometric_mean_score
+from sklearn.metrics import classification_report
 
 # Rééchantillonage
 from imblearn.over_sampling import SMOTE
@@ -40,8 +43,15 @@ y_test.head()
 X_train_save = X_train
 X_test_save = X_test
 
-# Gestion du déséquilibre et resampling (A discuter)
+# test un modèle de régression logistique sur tout le jeu de données
 
+lr = LogisticRegression(max_iter=1000)
+lr.fit(X_train, y_train)
+y_pred = lr.predict(X_test)
+print(pd.crosstab(y_test["RainTomorrow"], y_pred))
+print(classification_report(y_test["RainTomorrow"], y_pred))
+
+# Gestion du déséquilibre et resampling (A discuter)
 # On utilise le rééchantillonnage pour traiter le déséquilibre de la variable cible -> SMOTE
 
 print('Classes échantillon initial :', dict(pd.Series(y_train["RainTomorrow"]).value_counts()))
@@ -50,22 +60,86 @@ smo = SMOTE()
 X_sm, y_sm = smo.fit_resample(X_train, y_train)
 print('Classes échantillon SMOTE :', dict(pd.Series(y_sm["RainTomorrow"]).value_counts()))
 
-# on peut faire un rapide feature selection ou utiliser le script features_selection.py pour aller plus loin
+# test un modèle de régression logistique sur le jeu de données resample
+
+lr_sm = LogisticRegression(max_iter=1000)
+lr_sm.fit(X_sm, y_sm)
+y_pred_sm = lr_sm.predict(X_test)
+print(pd.crosstab(y_test["RainTomorrow"], y_pred_sm))
+print(classification_report_imbalanced(y_test["RainTomorrow"], y_pred_sm))
+
+# on peut aussi faire un rapide feature selection ou utiliser le script features_selection.py pour aller plus loin
 
 k_select = len(X_sm.columns)
 
 # On garde la moitié des variables environ avec un scoring de fisher
-selector = SelectKBest(f_classif, k=20)
+
+selector = SelectKBest(f_classif, k=k_select)
 selector = selector.fit(X_sm, y_sm)
 selector.get_feature_names_out()
 
-X_sm = selector.transform(X_sm)
-X_test = selector.transform(X_test)
+X_sm_sel = selector.transform(X_sm)
+X_test_sel = selector.transform(X_test)
 
-# test un modèle basique
+# test un modèle de régression logistique sur le jeu de données resample avec moins de features
 
-lr = LogisticRegression(max_iter = 1000)
-lr.fit(X_sm, y_sm, )
-y_pred = lr.predict(X_test)
-print(pd.crosstab(y_test["RainTomorrow"], y_pred))
-print(classification_report_imbalanced(y_test["RainTomorrow"], y_pred))
+lr_sel = LogisticRegression(max_iter=1000)
+lr_sel.fit(X_sm_sel, y_sm, )
+y_pred_sel = lr_sel.predict(X_test_sel)
+print(pd.crosstab(y_test["RainTomorrow"], y_pred_sel))
+print(classification_report_imbalanced(y_test["RainTomorrow"], y_pred_sel))
+
+
+# Teste un modèle sur une location
+
+location = "Sydney"
+X_train_loc = X_train.loc[location]
+y_train_loc = y_train.loc[location]
+X_test_loc = X_test.loc[location]
+y_test_loc = y_test.loc[location]
+
+lr_loc = LogisticRegression(max_iter=1000)
+lr_loc.fit(X_train_loc, y_train_loc)
+y_pred_loc = lr.predict(X_test_loc)
+print(pd.crosstab(y_test_loc["RainTomorrow"], y_pred_loc))
+print(classification_report(y_test_loc["RainTomorrow"], y_pred_loc))
+
+
+print('Classes échantillon initial :',
+      dict(pd.Series(y_train_loc["RainTomorrow"]).value_counts()))
+
+smo = SMOTE()
+X_sm_loc, y_sm_loc = smo.fit_resample(X_train_loc, y_train_loc)
+print('Classes échantillon SMOTE :',
+      dict(pd.Series(y_sm_loc["RainTomorrow"]).value_counts()))
+
+lr_loc = LogisticRegression(max_iter=1000)
+lr_loc.fit(X_sm_loc, y_sm_loc)
+y_pred_loc = lr.predict(X_test_loc)
+print(pd.crosstab(y_test_loc["RainTomorrow"], y_pred_loc))
+print(classification_report_imbalanced(y_test_loc["RainTomorrow"], y_pred_loc))
+
+
+# Pour le fun, XGboost et valeurs de shapley
+
+xgb_clf = xgb.XGBClassifier()
+xgb_clf.fit(X_train, y_train)
+
+y_pred_xgb = xgb_clf.predict(X_test)
+print(classification_report(y_test["RainTomorrow"], y_pred_xgb))
+
+explainer = shap.Explainer(xgb_clf)
+shap_values = explainer.shap_values(X_train)
+
+shap.summary_plot(shap_values, X_train, plot_type='bar')
+
+xgb_clf_sm = xgb.XGBClassifier()
+xgb_clf_sm.fit(X_sm, y_sm)
+
+y_pred_xgb_sm = xgb_clf_sm.predict(X_test)
+print(classification_report(y_test["RainTomorrow"], y_pred_xgb_sm))
+
+explainer_sm = shap.Explainer(xgb_clf_sm)
+shap_values_sm = explainer_sm.shap_values(X_train)
+
+shap.summary_plot(shap_values_sm, X_sm, plot_type='bar')

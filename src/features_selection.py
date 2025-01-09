@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-
-from sklearn.feature_selection import VarianceThreshold, SelectKBest, SelectFromModel, f_regression, mutual_info_regression, RFE, RFECV
+from sklearn.feature_selection import VarianceThreshold, SelectKBest, SelectFromModel
+from sklearn.feature_selection import RFE, SelectKBest, f_classif, f_regression, mutual_info_regression, RFE, RFECV
 from sklearn.model_selection import train_test_split, KFold, GridSearchCV
 from sklearn.linear_model import LinearRegression, Lasso
 from sklearn.preprocessing import StandardScaler
