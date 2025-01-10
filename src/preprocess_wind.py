@@ -46,6 +46,8 @@ class wind_speed_transformer(BaseEstimator, TransformerMixin):
                 if pd.isna(row[self.col_select]) else row[self.col_select],
                 axis=1)
 
+        print(f"Remplacement Na {self.col_select} {emoji.emojize(':thumbs_up:')}")
+
         return X
 
 
@@ -88,6 +90,8 @@ class wind_dir_transformer(BaseEstimator, TransformerMixin):
                   else self.dict_wdt[row[self.geo]][1] if pd.isna(row[self.col_select]) and row[self.col_target] == 1
                   else row[self.col_select],
             axis=1)
+
+        print(f"Remplacement Na {self.col_select} {emoji.emojize(':thumbs_up:')}")
 
         return X
 
@@ -135,6 +139,8 @@ class compass_dir_encoder(BaseEstimator, TransformerMixin):
         X[self.col_select + '_cos'] = X[self.col_select].apply(lambda x : self.cardinal_cos_sin[x][0])
         X[self.col_select + '_sin'] = X[self.col_select].apply(lambda x : self.cardinal_cos_sin[x][1])
 
+        print(f"encodage {self.col_select} {emoji.emojize(':thumbs_up:')}")
+
         return X
 
 
@@ -145,25 +151,15 @@ class compass_dir_encoder(BaseEstimator, TransformerMixin):
 
 
 
-def spinner():
-    spinner_chars = ['|', '/', '-', '\\']
-    while True:
-        for char in spinner_chars:
-            sys.stdout.write(f'\r{char}{char}{char}{char}{char}{char}{char}{char}{char}{char}{char}')
-            sys.stdout.flush()
-            time.sleep(0.1)
 
 
 def pipeline_wind_function(df):
 
     warnings.filterwarnings('ignore')
 
-    print('\n\ndébut du preprocessing des colonnes Wind...')
+    print('\n\ndébut du preprocessing des colonnes Wind...', end = '\n\n')
     # print('----> avant : ', df.isna().sum(), end = '\n\n')
 
-    spinner_thread = threading.Thread(target=spinner)
-    spinner_thread.daemon = True
-    spinner_thread.start()
 
     df = df[(df['Location'] != 'Newcastle') & (df['Location'] != 'Albany')]
 
@@ -184,7 +180,7 @@ def pipeline_wind_function(df):
 
     df.drop(columns = ['WindGustDir', 'WindDir9am', 'WindDir3pm'], inplace = True)
 
-    print(emoji.emojize('\n ...fin du preprocessing des colonnes Wind :thumbs_up::thumbs_up::thumbs_up:'), end = '\n\n')
+    print(emoji.emojize('\n ...fin du preprocessing des colonnes Wind :saluting_face: :saluting_face: :saluting_face: :saluting_face: :saluting_face: :saluting_face:'), end = '\n\n')
     # print('----> après', df.isna().sum())
 
     return df
