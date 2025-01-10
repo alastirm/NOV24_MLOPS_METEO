@@ -76,7 +76,7 @@ for col in columns:
     df = df.set_index(["Location", "Date"], drop=False)
     df = df.reindex(df.index.rename({"Location" : "id_Location", "Date" : "id_Date"}))
 
-#df = preprocess_pressure_humidity.remplir_na(df, columns=["Humidity9am", "Humidity3pm", "Pressure9am", "Pressure3pm"])
+# df = preprocess_pressure_humidity.remplir_na(df, columns=["Humidity9am", "Humidity3pm", "Pressure9am", "Pressure3pm"])
 df.isna().sum()
 
 # dist_mat = functions_created.create_distance_matrix()
@@ -137,12 +137,13 @@ X_train, X_test = encode_functions.encode_data(X_train=X_train,
                                                encoder="OneHotEncoder")
 
 # Scaling
-# Normalisation
+# Normalisation (à inclure dans un transformer ou une fonction)
 # Choix des colonnes à scaler avec le MinMaxScaler
 vars_to_scale = ['Rainfall',
                  'MinTemp', 'MaxTemp', 'Temp9am', 'Temp3pm',
                  'Humidity9am', 'Humidity3pm',
-                 'Pressure9am', 'Pressure3pm']
+                 'Pressure9am', 'Pressure3pm',
+                 'WindGustSpeed', 'WindSpeed9am', 'WindSpeed3pm']
 
 # On fit sur Xtrain
 scaler = MinMaxScaler().fit(X_train[vars_to_scale])
@@ -156,17 +157,17 @@ X_test_scaled[vars_to_scale] = scaler.transform(X_test[vars_to_scale])
 print(X_train_scaled[vars_to_scale].describe())
 print(X_test_scaled[vars_to_scale].describe())
 
-# Standardisation
+# Standardisation (à inclure dans un transformer ou une fonction)
 # Choix des colonnes à scaler avec le StandardScaler
-vars_to_scale2 = ['WindGustSpeed', 'WindSpeed9am', 'WindSpeed3pm']
+# vars_to_scale2 = []
 
-scaler2 = StandardScaler().fit(X_train[vars_to_scale2])
+# scaler2 = StandardScaler().fit(X_train[vars_to_scale2])
 
-X_train_scaled[vars_to_scale2] = scaler2.transform(X_train_scaled[vars_to_scale2])
-X_test_scaled[vars_to_scale2] = scaler2.transform(X_test_scaled[vars_to_scale2])
+# X_train_scaled[vars_to_scale2] = scaler2.transform(X_train_scaled[vars_to_scale2])
+# X_test_scaled[vars_to_scale2] = scaler2.transform(X_test_scaled[vars_to_scale2])
 
-print(X_train_scaled[vars_to_scale2].describe())
-print(X_test_scaled[vars_to_scale2].describe())
+# print(X_train_scaled[vars_to_scale2].describe())
+# print(X_test_scaled[vars_to_scale2].describe())
 
 # Sauvegarde fin preprocessing
 X_train_scaled.to_csv("../data_saved/X_train_final.csv")

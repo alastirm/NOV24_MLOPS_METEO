@@ -12,7 +12,7 @@ def fillNa_RainTommorrow(df):
     # boucle sur les locations
 
     for location in df["Location"].unique():
-        print(location)
+        # print(location)
 
         # création listes de dates
         df_dates, date_list = create_date_list(df)
@@ -42,7 +42,7 @@ def fillNa_RainTommorrow(df):
                                       (~ (df_location["RainToday"].isna()))]
 
         count += len(data_to_replace)
-        print("Dates remplacées : ", data_to_replace.index)
+        # print("Dates remplacées : ", data_to_replace.index)
 
         df_location.loc[(df_location["RainTomorrow"].isna()) &
                (~ (df_location["RainToday"].isna())), ["RainTomorrow"]] = \

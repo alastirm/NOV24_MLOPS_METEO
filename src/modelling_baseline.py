@@ -119,6 +119,19 @@ y_pred_loc = lr.predict(X_test_loc)
 print(pd.crosstab(y_test_loc["RainTomorrow"], y_pred_loc))
 print(classification_report_imbalanced(y_test_loc["RainTomorrow"], y_pred_loc))
 
+# Test RandomForestClassifier
+
+rf_clf = RandomForestClassifier()
+rf_clf.fit(X_train, y_train)
+y_pred_rf = rf_clf.predict(X_test)
+print(pd.crosstab(y_test["RainTomorrow"], y_pred_rf))
+print(classification_report(y_test["RainTomorrow"], y_pred_rf))
+
+rf_clf_sm = LogisticRegression(max_iter=1000)
+rf_clf_sm.fit(X_sm, y_sm)
+y_pred_rf_sm = rf_clf_sm.predict(X_test)
+print(pd.crosstab(y_test["RainTomorrow"], y_pred_rf_sm))
+print(classification_report_imbalanced(y_test["RainTomorrow"], y_pred_rf_sm))
 
 # Pour le fun, XGboost et valeurs de shapley
 

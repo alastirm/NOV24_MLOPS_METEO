@@ -15,6 +15,8 @@ from sklearn.manifold import LocallyLinearEmbedding, Isomap, TSNE
 import umap
 
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report
+
 
 import functions_created
 
@@ -97,8 +99,8 @@ plt.show()
 
 # Attention à appliquer sur des données scaled !
 
-lr = LogisticRegression()
-rfe = RFE(estimator=lr, step=1, n_features_to_select = k_select)
+clf = RandomForestClassifier()
+rfe = RFE(estimator=clf, step=1, n_features_to_select = k_select)
 rfe.fit(X_train, y_train)
 
 mask_rfe = rfe.get_support()
@@ -118,9 +120,10 @@ plt.xticks(rotation=90,
 plt.show()
 
 # RFE avec une cross validation (pas besoin de k_select)
+# scoring sur f1_score
 
 crossval = KFold(n_splits = 5, random_state = 2, shuffle = True)
-rfecv = RFECV(estimator=lr, cv = crossval, step=1)
+rfecv = RFECV(estimator=clf, cv = crossval, step=1, scoring="f1_macro")
 rfecv.fit(X_train, y_train)
 
 mask_rfecv = rfecv.get_support()
@@ -138,16 +141,30 @@ fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 5))
 for i in range(5):
     ax1.plot(rfecv.cv_results_[f'split{i}_test_score'])
     ax1.set_xlabel('Nombre de features')
-    ax1.set_ylabel('Score')
+    ax1.set_ylabel('f1-Score')
     ax1.set_title('Score par fold de test pour chaque itération')
     
     ax2.plot(rfecv.cv_results_['mean_test_score'])
     ax2.set_xlabel('Nombre de features')
-    ax2.set_ylabel('Score')
+    ax2.set_ylabel('f1-Score')
     ax2.set_title('Score moyen en cross validation')
 
-plt.savefig("../plots/features_selection/RFE_LR_CV_score.png")
+plt.savefig("../plots/features_selection/RFE_RF_CV_score.png")
 plt.show();
+
+# fit un modèle sur les features choisies
+X_train_rfe = rfecv.transform(X_train)
+X_test_rfe = rfecv.transform(X_test)
+
+clf = RandomForestClassifier(n_jobs = -1)
+# L'argument n_jobs ne vaut pas -1 par défaut. Cette valeur permet de forcer le processeur à utiliser toute sa puissance de calcul parallèle.
+clf.fit(X_train_rfe, y_train['RainTomorrow'])
+clf.score(X_test_rfe, y_test['RainTomorrow'])
+
+y_pred_rfe = clf.predict(X_test_rfe)
+print(pd.crosstab(y_test["RainTomorrow"], y_pred_rfe))
+print(classification_report(y_test["RainTomorrow"], y_pred_rfe))
+
 
 #########
 # Lasso #
@@ -248,6 +265,10 @@ clf.score(X_test, y_test)
 clf_pca = RandomForestClassifier(n_jobs = -1)
 clf_pca.fit(X_train_pca, y_train)
 clf_pca.score(X_test_pca, y_test)
+
+y_pred_rf = clf_pca.predict(X_test_pca)
+print(pd.crosstab(y_test["RainTomorrow"], y_pred_rf))
+print(classification_report(y_test["RainTomorrow"], y_pred_rf))
 
 
 # Si le score est proches, la PCA est efficace pour réduire la dimension en conservant l'info
