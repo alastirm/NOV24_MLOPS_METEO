@@ -7,6 +7,7 @@ from sklearn.feature_selection import RFE, SelectKBest, f_classif, f_regression,
 from sklearn.model_selection import train_test_split, KFold, GridSearchCV
 from sklearn.linear_model import LinearRegression, Lasso
 from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
 
 from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
@@ -41,7 +42,7 @@ X_test_save = X_test
 
 # Sélection des features avec une variance suffisante
 
-sel_vt = VarianceThreshold(threshold=1e-06)
+sel_vt = VarianceThreshold(threshold=0.01)
 sel_vt.fit(X_train)
 
 # plot des features supprimées
@@ -67,12 +68,16 @@ k_select = len(X_train.columns)//2
 sel_kbf = SelectKBest(score_func=f_regression, k=k_select)
 sel_kbf.fit(X_train, y_train)
 mask_kbf = sel_kbf.get_support()
+# X_train.columns[mask_kbf]
+
 plt.matshow(mask_kbf.reshape(1, -1), cmap='gray_r')
 plt.xlabel('Axe des features')
 plt.xticks(rotation=90,
            ticks=range(len(X_train.columns)),
            labels=X_train.columns)
 plt.show()
+X_train_kbf = sel_kbf.transform(X_train,)
+X_test_kbf = sel_kbf.transform(X_test)
 
 # Sélection des features sur la base de l'information mutuelle
 
@@ -92,8 +97,8 @@ plt.show()
 
 # Attention à appliquer sur des données scaled !
 
-lm = LinearRegression()
-rfe = RFE(estimator=lm, step=1, n_features_to_select = k_select)
+lr = LogisticRegression()
+rfe = RFE(estimator=lr, step=1, n_features_to_select = k_select)
 rfe.fit(X_train, y_train)
 
 mask_rfe = rfe.get_support()
@@ -115,7 +120,7 @@ plt.show()
 # RFE avec une cross validation (pas besoin de k_select)
 
 crossval = KFold(n_splits = 5, random_state = 2, shuffle = True)
-rfecv = RFECV(estimator=lm, cv = crossval, step=1)
+rfecv = RFECV(estimator=lr, cv = crossval, step=1)
 rfecv.fit(X_train, y_train)
 
 mask_rfecv = rfecv.get_support()
@@ -141,6 +146,7 @@ for i in range(5):
     ax2.set_ylabel('Score')
     ax2.set_title('Score moyen en cross validation')
 
+plt.savefig("../plots/features_selection/RFE_LR_CV_score.png")
 plt.show();
 
 #########
@@ -214,6 +220,8 @@ plt.xlabel('Nombre de composantes')
 plt.ylabel('Part de variance expliquée')
 plt.axhline(y=0.9, color='r', linestyle='--')
 plt.plot(pca.explained_variance_ratio_.cumsum());
+plt.savefig("../plots/features_selection/pca_explained_variance_ratio.png")
+plt.show()
 
 explained_variance = pd.DataFrame(pca.explained_variance_ratio_.cumsum())
 
@@ -240,6 +248,7 @@ clf.score(X_test, y_test)
 clf_pca = RandomForestClassifier(n_jobs = -1)
 clf_pca.fit(X_train_pca, y_train)
 clf_pca.score(X_test_pca, y_test)
+
 
 # Si le score est proches, la PCA est efficace pour réduire la dimension en conservant l'info
 
