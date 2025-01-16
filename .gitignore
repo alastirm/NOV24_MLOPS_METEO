@@ -2,6 +2,7 @@
 data
 data_csv
 data_saved
+requirements.txt
 
 # plot folder
 plots
