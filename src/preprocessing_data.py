@@ -124,10 +124,8 @@ df_final = pipeline_encoding.fit_transform(df_final)
 
 df_final.iloc[:,-20:-1].describe()
 
-
-
 # On retire les colonnes Date et Location qui sont en index
-df_final = df_final.drop(columns=["Date", "Location"])
+df_final = df_final.drop(columns=["Date", "Location", "Month", "Season"])
 print(df_final.isna().sum())
 
 df_final.to_csv('../data_saved/data_preprocessed.csv')
