@@ -126,8 +126,8 @@ class compass_dir_encoder(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
 
         for direction, angle in self.cardinal_mapping.items():
-            cos_a = np.round(np.cos(np.radians(angle)), 6)
-            sin_a = np.round(np.sin(np.radians(angle)), 6)
+            cos_a = np.cos(np.radians(angle))
+            sin_a = np.sin(np.radians(angle))
 
             self.cardinal_cos_sin[direction] = (cos_a, sin_a)
 
