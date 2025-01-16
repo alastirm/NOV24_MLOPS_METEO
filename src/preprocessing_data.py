@@ -65,8 +65,8 @@ df = preprocess_temperatures.preprocess_temperature_mean(df, columns=["MinTemp",
 df.isna().sum()
 
 
-# preprocess pressures et humidities 
-# J'ai du ajouter un réindexage car je ne sais pas pourquoi mais la 
+# preprocess pressures et humidities
+# J'ai du ajouter un réindexage car je ne sais pas pourquoi mais la
 # fonction remplissage_na_voisinnage modifie les index et ajoute Location en index
 
 columns=["Humidity9am", "Humidity3pm", "Pressure9am", "Pressure3pm"]
@@ -103,8 +103,14 @@ print("Dimensions après : ", dim_after_preprocess)
 # On retire les derniers Nas (à faire après avoir géré toutes les colonnes)
 df_final = df.dropna()
 
+df_final.to_csv('../data_saved/data_mat.csv')
+print(df_final.columns)
+print('data_mat saved')
+
 # On retire les colonnes Date et Location qui sont en index
 df_final = df_final.drop(columns=["Date", "Location"])
+print(df_final.isna().sum())
+
 
 # On sélectionne les features à garder
 
