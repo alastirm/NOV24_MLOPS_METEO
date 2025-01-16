@@ -18,6 +18,9 @@ import preprocess_pressure_humidity
 # Fonctions encodage
 import encode_functions
 
+# pipeline
+from sklearn.pipeline import Pipeline
+
 # Autres fonctions ajoutées
 import functions_created
 
@@ -103,6 +106,20 @@ print("Dimensions après : ", dim_after_preprocess)
 # On retire les derniers Nas (à faire après avoir géré toutes les colonnes)
 df_final = df.dropna()
 
+# Encodage des variables selon deux types (onehot et trigonométrique (cos et sin))
+# On crée des dummies pour ces variables
+vars_onehot = ["Climate", "Year"]
+# Les variables avec un encodage trigonometrique sont "Month" et "Season"
+pipeline_encoding = Pipeline([
+    ('Month_encoder', encode_functions.trigo_encoder(col_select="Month")),
+    ('Year_encoder', encode_functions.trigo_encoder(col_select="Season")),
+    ('OneHot_encoder',  encode_functions.encoder_vars(vars_to_encode=vars_onehot))
+    ])
+
+df_final = pipeline_encoding.fit_transform(df_final)
+
+df_final.iloc[:,-20:-1].describe()
+
 df_final.to_csv('../data_saved/data_mat.csv')
 print(df_final.columns)
 print('data_mat saved')
@@ -111,6 +128,7 @@ print('data_mat saved')
 df_final = df_final.drop(columns=["Date", "Location"])
 print(df_final.isna().sum())
 
+df_final.to_csv('../data_saved/data_preprocessed.csv')
 
 # On sélectionne les features à garder
 
@@ -124,23 +142,10 @@ feats_selected = ['Year', 'Month', 'Season',
 # Scindage du dataset en un échantillon test (20%) et train
 
 feats = df_final.drop(columns="RainTomorrow")
-feats = feats.loc[:, feats_selected]
 target = df_final["RainTomorrow"]
 
 X_train, X_test, y_train, y_test = \
     train_test_split(feats, target, test_size=0.20, random_state=1234)
-
-# Encodage des features
-# Exemple en important la fonction encode_data de encode_functions.py
-# On crée des dummies pour la saison, l'année, le mois avec le OneHotEncoder
-
-vars_to_encode = ["Season", "Year", "Month"]
-X_train.head()
-
-X_train, X_test = encode_functions.encode_data(X_train=X_train,
-                                               X_test=X_test,
-                                               vars_to_encode=vars_to_encode,
-                                               encoder="OneHotEncoder")
 
 # Scaling
 # Normalisation (à inclure dans un transformer ou une fonction)
@@ -158,7 +163,6 @@ X_train_scaled = X_train
 X_train_scaled[vars_to_scale] = scaler.transform(X_train[vars_to_scale])
 X_test_scaled = X_test
 X_test_scaled[vars_to_scale] = scaler.transform(X_test[vars_to_scale])
-
 
 print(X_train_scaled[vars_to_scale].describe())
 print(X_test_scaled[vars_to_scale].describe())
