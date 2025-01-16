@@ -73,3 +73,9 @@ models,predictions = clf_lazy.fit(X_train, X_test,
 
 # print models 
 display(models)
+
+# sort par f1 score 
+models = models.sort_values("F1 Score", ascending = False)
+models = models.apply(lambda x: round(x, ndigits=2))
+
+models.to_csv("../modeling_results/lazy_predict_mixtepreprocessing.csv",  decimal = ",")

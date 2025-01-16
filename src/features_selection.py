@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.feature_selection import VarianceThreshold, SelectKBest, SelectFromModel
-from sklearn.feature_selection import RFE, SelectKBest, f_classif, f_regression, mutual_info_regression, RFE, RFECV
+from sklearn.feature_selection import RFE, SelectKBest, f_classif, f_regression, mutual_info_regression, mutual_info_classif, RFE, RFECV
 from sklearn.model_selection import train_test_split, KFold, GridSearchCV
 from sklearn.linear_model import LinearRegression, Lasso
 from sklearn.preprocessing import StandardScaler
@@ -58,6 +58,8 @@ plt.xticks(rotation=90,
 X_train_VT = sel_vt.transform(X_train)
 X_test_VT = sel_vt.transform(X_test)
 
+X_train_VT.shape
+
 ################
 # Select Kbest #
 ################
@@ -66,8 +68,7 @@ k_select = len(X_train.columns)//2
 
 # Sélection des features sur la base d'un test de ficher
 
-
-sel_kbf = SelectKBest(score_func=f_regression, k=k_select)
+sel_kbf = SelectKBest(score_func=f_classif, k=k_select)
 sel_kbf.fit(X_train, y_train)
 mask_kbf = sel_kbf.get_support()
 # X_train.columns[mask_kbf]
@@ -80,10 +81,11 @@ plt.xticks(rotation=90,
 plt.show()
 X_train_kbf = sel_kbf.transform(X_train,)
 X_test_kbf = sel_kbf.transform(X_test)
+X_train_kbf.shape
 
 # Sélection des features sur la base de l'information mutuelle
 
-sel_kbi  = SelectKBest(score_func = mutual_info_regression, k=k_select)
+sel_kbi  = SelectKBest(score_func = mutual_info_classif, k=k_select)
 sel_kbi.fit(X_train, y_train)
 mask_kbi = sel_kbi.get_support()
 plt.matshow(mask_kbi.reshape(1,-1), cmap = 'gray_r');
@@ -93,13 +95,17 @@ plt.xticks(rotation=90,
            labels=X_train.columns)
 plt.show()
 
+X_train_kbi = sel_kbi.transform(X_train)
+X_test_kbi = sel_kbi.transform(X_test)
+X_train_kbi.shape
+
 #################################
 # Recursive Feature Elimination #
 #################################
 
 # Attention à appliquer sur des données scaled !
 
-clf = RandomForestClassifier()
+clf = LogisticRegression()
 rfe = RFE(estimator=clf, step=1, n_features_to_select = k_select)
 rfe.fit(X_train, y_train)
 
@@ -142,14 +148,14 @@ for i in range(5):
     ax1.plot(rfecv.cv_results_[f'split{i}_test_score'])
     ax1.set_xlabel('Nombre de features')
     ax1.set_ylabel('f1-Score')
-    ax1.set_title('Score par fold de test pour chaque itération')
+    ax1.set_title('f1 Score par fold de test pour chaque itération')
     
     ax2.plot(rfecv.cv_results_['mean_test_score'])
     ax2.set_xlabel('Nombre de features')
     ax2.set_ylabel('f1-Score')
-    ax2.set_title('Score moyen en cross validation')
+    ax2.set_title('f1 Score moyen en cross validation')
 
-plt.savefig("../plots/features_selection/RFE_RF_CV_score.png")
+plt.savefig("../plots/features_selection/RFE_LR_CV_score.png")
 plt.show();
 
 # fit un modèle sur les features choisies
@@ -171,7 +177,7 @@ print(classification_report(y_test["RainTomorrow"], y_pred_rfe))
 #########
 
 lasso = Lasso(alpha = 1)
-model = SelectFromModel(estimator = lasso, threshold = 1e-10)
+model = SelectFromModel(estimator = lasso, threshold = 0.01)
 model.fit(X_train, y_train)
 
 mask_lasso = model.get_support()
@@ -261,14 +267,17 @@ clf = RandomForestClassifier(n_jobs = -1)
 # L'argument n_jobs ne vaut pas -1 par défaut. Cette valeur permet de forcer le processeur à utiliser toute sa puissance de calcul parallèle.
 clf.fit(X_train, y_train)
 clf.score(X_test, y_test)
+y_pred_rf = clf.predict(X_test)
+print(pd.crosstab(y_test["RainTomorrow"], y_pred_rf))
+print(classification_report(y_test["RainTomorrow"], y_pred_rf))
+
 
 clf_pca = RandomForestClassifier(n_jobs = -1)
 clf_pca.fit(X_train_pca, y_train)
 clf_pca.score(X_test_pca, y_test)
-
-y_pred_rf = clf_pca.predict(X_test_pca)
-print(pd.crosstab(y_test["RainTomorrow"], y_pred_rf))
-print(classification_report(y_test["RainTomorrow"], y_pred_rf))
+y_pred_pca = clf_pca.predict(X_test_pca)
+print(pd.crosstab(y_test["RainTomorrow"], y_pred_pca))
+print(classification_report(y_test["RainTomorrow"], y_pred_pca))
 
 
 # Si le score est proches, la PCA est efficace pour réduire la dimension en conservant l'info
