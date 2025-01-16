@@ -106,6 +106,10 @@ print("Dimensions après : ", dim_after_preprocess)
 # On retire les derniers Nas (à faire après avoir géré toutes les colonnes)
 df_final = df.dropna()
 
+df_final.to_csv('../data_saved/data_mat.csv')
+print(df_final.columns)
+print('data_mat saved')
+
 # Encodage des variables selon deux types (onehot et trigonométrique (cos et sin))
 # On crée des dummies pour ces variables
 vars_onehot = ["Climate", "Year"]
@@ -120,9 +124,7 @@ df_final = pipeline_encoding.fit_transform(df_final)
 
 df_final.iloc[:,-20:-1].describe()
 
-df_final.to_csv('../data_saved/data_mat.csv')
-print(df_final.columns)
-print('data_mat saved')
+
 
 # On retire les colonnes Date et Location qui sont en index
 df_final = df_final.drop(columns=["Date", "Location"])
