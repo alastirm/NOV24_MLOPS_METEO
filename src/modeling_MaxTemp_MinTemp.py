@@ -105,7 +105,6 @@ def model_sarima_MaxTemp(df, station_name, output_model):
     plt.close()
 
     # Décomposition de la série temporelle
-    plt.figure(figsize=(15, 7))
     plt.rcParams.update({"axes.prop_cycle": plt.cycler("color", ["red", "red", "red", "red"])})
     result = seasonal_decompose(df["MaxTemp"], model="additive", period=365)
     fig = result.plot()
@@ -114,11 +113,14 @@ def model_sarima_MaxTemp(df, station_name, output_model):
     fig.axes[2].plot(result.seasonal, color="firebrick", linewidth=0.5)
     fig.axes[3].scatter(result.resid.index, result.resid, color="firebrick")
     for ax in fig.axes:
-        ax.set_title("") # Enlever les titres des sous-graphiques
-    fig.suptitle(f"MaxTemp {station_name} - SARIMA : Décomposition de la série temporelle", fontsize=20)
-    plt.tight_layout()
+        ax.set_title("")
+    fig.suptitle(f"MaxTemp {station_name} - SARIMA : Décomposition de la série temporelle", fontsize=18)
+    fig.set_size_inches(20, 10)
+    fig.subplots_adjust(hspace=0.1, wspace=0.1)
+    fig.set_dpi(500)
+    plt.tight_layout(pad=1.0)
     plt.savefig(os.path.join(output_model, f"2. {station_name}_MaxTemp_TimeSeries_Décomposition.png"))
-    plt.show()  # plt.show() au lieu de plt.close() pour ajuster la taille et enregistrer manuellement, sinon le graph est compressé
+    plt.close()
 
     # Diviser les données en ensemble d'entraînement et de test
     train = df["MaxTemp"][:int(0.8 * len(df))]
@@ -324,7 +326,6 @@ def model_sarima_MinTemp(df, station_name, output_model):
     plt.close()
 
     # Décomposition de la série temporelle
-    plt.figure(figsize=(15, 7))
     plt.rcParams.update({"axes.prop_cycle": plt.cycler("color", ["royalblue", "royalblue", "royalblue", "royalblue"])})
     result = seasonal_decompose(df["MinTemp"], model="additive", period=365)
     fig = result.plot()
@@ -333,11 +334,14 @@ def model_sarima_MinTemp(df, station_name, output_model):
     fig.axes[2].plot(result.seasonal, color="navy", linewidth=0.5)
     fig.axes[3].scatter(result.resid.index, result.resid, color="navy")
     for ax in fig.axes:
-        ax.set_title("") # Enlever les titres des sous-graphiques
-    fig.suptitle(f"MinTemp {station_name} - SARIMA : Décomposition de la série temporelle", fontsize=20)
-    plt.tight_layout()
+        ax.set_title("")
+    fig.suptitle(f"MinTemp {station_name} - SARIMA : Décomposition de la série temporelle", fontsize=18)
+    fig.set_size_inches(20, 10)
+    fig.subplots_adjust(hspace=0.1, wspace=0.1)
+    fig.set_dpi(500)
+    plt.tight_layout(pad=1.0)
     plt.savefig(os.path.join(output_model, f"2. {station_name}_MinTemp_TimeSeries_Décomposition.png"))
-    plt.show()  # plt.show() au lieu de plt.close() pour ajuster la taille et enregistrer manuellement, sinon le graph est compressé
+    plt.close()
 
     # Diviser les données en ensemble d'entraînement et de test
     train = df["MinTemp"][:int(0.8 * len(df))]
