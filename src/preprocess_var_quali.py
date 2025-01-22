@@ -11,7 +11,7 @@ def preprocess_median_location_month (df, columns=["MinTemp", "MaxTemp", "Temp9a
         df[col] = df.set_index(["Month", "Location"])[col].fillna(median_values[col]).values
     return df
 
-# # Appeler les fonctions de preprocessing
+# Appeler les fonctions de preprocessing
 # df_median_location = preprocess_temperatures_median_location(df.copy())
 # df_median_climate = preprocess_temperatures_median_climate(df.copy())
 # df_mean = preprocess_temperature_mean(df.copy())
