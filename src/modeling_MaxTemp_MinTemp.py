@@ -22,11 +22,9 @@ warnings.simplefilter("ignore", ConvergenceWarning)
 
 ## Lecture du dataframe & Sélection des données
 
-# Obtenir le chemin du dossier 
+# Chargement des données
 base_dir = Path(__file__).resolve().parent
 data_path = base_dir / "df_final.csv"
-
-# Chargement des données
 df_final = pd.read_csv(data_path)
 df_final = df_final.rename(columns={"id_Location": "Location", "id_Date": "Date"})
 df_final["Date"] = pd.to_datetime(df_final["Date"])
@@ -48,33 +46,40 @@ for location, groupe in groupes:
 ### J'ai essayé de stocker les données dans un dictionnaire mais ça génère des erreurs :
 ### ValueError: Provided exogenous values are not of the appropriate shape. Required (668, 25), got (2669, 25)
 
+# Sélection de la Location
+def location_selection(station_name:str, base_dir: Path):
+    """
+    Cette fonction charge les données pour une station spécifique, 
+    affiche des informations sur le dataframe et crée un dossier 
+    pour sauvegarder les résultats des modèles.
+
+    Args:
+    - station_name (str): Le nom de la station à analyser.
+    - base_dir (Path): Le répertoire de base où enregistrer les résultats.
+    """
+    # Chargement des données
+    df_location_path = base_dir / "data_location" / f"df_{station_name}.csv"
+    df_location = pd.read_csv(df_location_path)
+    df_location["Date"] = pd.to_datetime(df_location["Date"])
+
+    # Infos sur le dataframe
+    print(f"\nInfos sur df_location - {station_name} :\n")
+    print(df_location.info(), "\n")
+    print(f"\nHead df_location - {station_name} :\n")
+    print(df_location.head(), "\n")
+
+    # Créer un dossier pour sauvegarder les graphes/fichiers des modèles
+    output_model = base_dir / "modeling_MaxTemp_MinTemp_results" / f"{station_name}"
+    output_model = output_model.resolve()
+    if not output_model.exists():
+        output_model.mkdir(parents=True)
+    
+    return df_location, output_model
+
+
 ########################################################################################################
 
-## Sélection de la Sation/Ville étudiée
-
-# Location étudiée
-station_name = "Sydney"  ### !!! Attention à bien changer le nom de la ville ici !!! ###
-
-# Chargement des données
-df_location_path = Path(__file__).resolve().parent / "data_location" / f"df_{station_name}.csv"
-df_location = pd.read_csv(df_location_path)
-df_location["Date"] = pd.to_datetime(df_location["Date"])
-
-# Infos sur le dataframe
-print(f"\nInfos sur df_location - {station_name} :\n")
-print(df_location.info(), "\n")
-print(f"\nHead df_location - {station_name} :\n")
-print(df_location.head(), "n")
-
-# Créer un dossier pour sauvegarder les graphes/fichiers des modèles
-output_model = base_dir / "modeling_MaxTemp_MinTemp_results" / f"{station_name}"
-output_model = output_model.resolve()
-if not output_model.exists():
-    output_model.mkdir(parents=True)
-
-########################################################################################################
-
-## Variable MaxTemp
+## Modeling variables MaxTemp & MinTemp
 
 # Modèle SARIMA MaxTemp
 def model_sarima_MaxTemp(df, station_name, output_model):
@@ -288,15 +293,6 @@ def model_prophet_Maxtemp(df_location, station_name, output_model):
         f.write(f"R-squared: {r2_prophet}\n")
         f.write(f"Mean Absolute Percentage Error: {mape_prophet}%\n")
 
-# Appeler les fonctions de modeling
-model_sarima_MaxTemp(df_location, station_name, output_model)
-model_prophet_Maxtemp(df_location, station_name, output_model)
-
-
-########################################################################################################
-
-## Variable MinTemp
-
 # Modèle SARIMA MinTemp
 def model_sarima_MinTemp(df, station_name, output_model):
     """
@@ -509,9 +505,88 @@ def model_prophet_MinTemp(df_location, station_name, output_model):
         f.write(f"R-squared: {r2_prophet}\n")
         f.write(f"Mean Absolute Percentage Error: {mape_prophet}%\n")
 
-# Appeler les fonctions de modeling
+
+########################################################################################################
+
+## Sélection des Location étudiées
+
+station_name = "Sydney"
+base_dir = Path(__file__).resolve().parent
+df_location, output_model = location_selection(station_name, base_dir)
+model_sarima_MaxTemp(df_location, station_name, output_model)
+model_prophet_Maxtemp(df_location, station_name, output_model)
 model_sarima_MinTemp(df_location, station_name, output_model)
 model_prophet_MinTemp(df_location, station_name, output_model)
 
+station_name = "Adelaide"
+base_dir = Path(__file__).resolve().parent
+df_location, output_model = location_selection(station_name, base_dir)
+model_sarima_MaxTemp(df_location, station_name, output_model)
+model_prophet_Maxtemp(df_location, station_name, output_model)
+model_sarima_MinTemp(df_location, station_name, output_model)
+model_prophet_MinTemp(df_location, station_name, output_model)
 
-########################################################################################################
+station_name = "AliceSprings"
+base_dir = Path(__file__).resolve().parent
+df_location, output_model = location_selection(station_name, base_dir)
+model_sarima_MaxTemp(df_location, station_name, output_model)
+model_prophet_Maxtemp(df_location, station_name, output_model)
+model_sarima_MinTemp(df_location, station_name, output_model)
+model_prophet_MinTemp(df_location, station_name, output_model)
+
+station_name = "Brisbane"
+base_dir = Path(__file__).resolve().parent
+df_location, output_model = location_selection(station_name, base_dir)
+model_sarima_MaxTemp(df_location, station_name, output_model)
+model_prophet_Maxtemp(df_location, station_name, output_model)
+model_sarima_MinTemp(df_location, station_name, output_model)
+model_prophet_MinTemp(df_location, station_name, output_model)
+
+station_name = "Cairns"
+base_dir = Path(__file__).resolve().parent
+df_location, output_model = location_selection(station_name, base_dir)
+model_sarima_MaxTemp(df_location, station_name, output_model)
+model_prophet_Maxtemp(df_location, station_name, output_model)
+model_sarima_MinTemp(df_location, station_name, output_model)
+model_prophet_MinTemp(df_location, station_name, output_model)
+
+station_name = "Darwin"
+base_dir = Path(__file__).resolve().parent
+df_location, output_model = location_selection(station_name, base_dir)
+model_sarima_MaxTemp(df_location, station_name, output_model)
+model_prophet_Maxtemp(df_location, station_name, output_model)
+model_sarima_MinTemp(df_location, station_name, output_model)
+model_prophet_MinTemp(df_location, station_name, output_model)
+
+station_name = "Hobart"
+base_dir = Path(__file__).resolve().parent
+df_location, output_model = location_selection(station_name, base_dir)
+model_sarima_MaxTemp(df_location, station_name, output_model)
+model_prophet_Maxtemp(df_location, station_name, output_model)
+model_sarima_MinTemp(df_location, station_name, output_model)
+model_prophet_MinTemp(df_location, station_name, output_model)
+
+station_name = "Melbourne"
+base_dir = Path(__file__).resolve().parent
+df_location, output_model = location_selection(station_name, base_dir)
+model_sarima_MaxTemp(df_location, station_name, output_model)
+model_prophet_Maxtemp(df_location, station_name, output_model)
+model_sarima_MinTemp(df_location, station_name, output_model)
+model_prophet_MinTemp(df_location, station_name, output_model)
+
+station_name = "Perth"
+base_dir = Path(__file__).resolve().parent
+df_location, output_model = location_selection(station_name, base_dir)
+model_sarima_MaxTemp(df_location, station_name, output_model)
+model_prophet_Maxtemp(df_location, station_name, output_model)
+model_sarima_MinTemp(df_location, station_name, output_model)
+model_prophet_MinTemp(df_location, station_name, output_model)
+
+station_name = "Uluru"
+base_dir = Path(__file__).resolve().parent
+df_location, output_model = location_selection(station_name, base_dir)
+model_sarima_MaxTemp(df_location, station_name, output_model)
+model_prophet_Maxtemp(df_location, station_name, output_model)
+model_sarima_MinTemp(df_location, station_name, output_model)
+model_prophet_MinTemp(df_location, station_name, output_model)
+
