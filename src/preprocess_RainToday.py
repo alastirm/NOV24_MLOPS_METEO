@@ -13,7 +13,7 @@ def preprocess_RainToday(df):
        (df["Rainfall"] <1), "RainToday"] = 0
 
     print(df["RainToday"].isna().sum())
-    print(f"encodage {"RainToday"} {emoji.emojize(':thumbs_up:')}")
+    print(f"remplissage des Nas de {"RainToday"} {emoji.emojize(':thumbs_up:')}")
 
     return df
 

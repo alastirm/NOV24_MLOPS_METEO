@@ -108,12 +108,13 @@ print("Dimensions après : ", dim_after_preprocess)
 
 # On retire les derniers Nas (à faire après avoir géré toutes les colonnes)
 df_final = df.dropna()
+df_final.columns
 
 # sauvegarde (libre à vous de sauvegarder avant)
 df_final.to_csv('../data_saved/data_preprocessed.csv')
 
-# # Scindage du dataset en un échantillon test (20%) et train
 
+# # Scindage du dataset en un échantillon test (20%) et train
 # feats = df_final.drop(columns="RainTomorrow")
 # target = df_final["RainTomorrow"]
 

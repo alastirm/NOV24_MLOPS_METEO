@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder, OrdinalEncoder
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
 import emoji
@@ -16,9 +16,9 @@ def encode_data(X_train, X_test, vars_to_encode, encoder="OneHotEncoder"):
     if encoder ==  "OneHotEncoder":
         encoder = OneHotEncoder(handle_unknown='ignore', sparse_output=False,  dtype='int')
     
-    # Saison : dummies par saison
-    # Mois : dummies par saison
-    # Year : dummies par saison
+    # Encodage des variables
+    if encoder ==  "LabelEncoder":
+        encoder = LabelEncoder()
 
     # On fit l'encodeur sur les variables voulues sur le jeu d'entrainement
     
@@ -60,7 +60,8 @@ class encoder_vars(BaseEstimator, TransformerMixin):
         self.encoder = encoder
         if self.encoder == "OneHotEncoder":
             self.encoder = OneHotEncoder(handle_unknown='ignore', sparse_output=False,  dtype='int')
-
+        if encoder ==  "OrdinalEncoder":
+            self.encoder = OrdinalEncoder()
 
     def fit(self, X, y=None):
         # On fit l'encodeur sur les variables voulues

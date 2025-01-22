@@ -76,7 +76,7 @@ pipeline_nearest = \
         preprocess_method="nearest", # choix de la méthode de preprocessing
         distance_max=50) # choix de la distance max où on cherche une station proche
 
-# Fittransform du pipeline (assez long donc je sauvegarde à l'issue
+# Fittransform du pipeline (assez long donc je sauvegarde à l'issue)
 # df_near = complete_nas_transformer_nearest.fit_transform(df)
 # df_near.to_csv('../data_saved/df_near.csv')
 
@@ -131,12 +131,15 @@ nas_after_mode = pd.DataFrame(df_near_median_mode.isna().sum())
 print(nas_after_mode)
 
 # STEP 7 preprocess RainToday (en fonction des Rainfall récupérés)
-df = preprocess_RainToday.preprocess_RainToday(df_near_median_mode )
+df = preprocess_RainToday.preprocess_RainToday(df_near_median_mode)
 df.isna().sum()
 
-# STEP 8 Encodage des variables selon deux types (onehot et trigonométrique (cos et sin))
+# STEP 8 Encodage des variables selon deux types (onehot et trigonométrique)
 # On crée des dummies pour ces variables 
-vars_onehot = ["Climate", "Year", "Cloud3pm", "Cloud9am"]
+vars_onehot = ["Climate", "Year"]
+
+# On crée des labels de 1 à n-1 classes pour ces colonnes
+vars_labels = ['Cloud9am', 'Cloud3pm']
 
 # A faire : passer cloud en labelling encoder
 # Les variables avec un encodage trigonometrique sont "WindGustDir", "Month" et "Season" 
@@ -144,7 +147,10 @@ pipeline_encoding = Pipeline([
     ('Month_encoder', encode_functions.trigo_encoder(col_select="Month")),
     ('Year_encoder', encode_functions.trigo_encoder(col_select="Season")),
     ('WindGustDir_encoder', encode_functions.trigo_encoder(col_select="WindGustDir")),
-    ('OneHot_encoder',  encode_functions.encoder_vars(vars_to_encode=vars_onehot))
+    ('OneHot_encoder',  encode_functions.encoder_vars(vars_to_encode=vars_onehot, 
+                                                      encoder="OneHotEncoder")),
+    ('Label_encoder',  encode_functions.encoder_vars(vars_to_encode=vars_labels, 
+                                                     encoder="LabelEncoder"))
     ])
 
 
@@ -172,37 +178,5 @@ print("Dimensions avant : ", dim_before_preprocess)
 print("Dimensions après : ", dim_after_preprocess)
 
 # On retire les colonnes Date et Location qui sont en index
-df_final = df_final.drop(columns=["Date", "Location",)
-
-
-df_final.to_csv('../data_saved/data_preprocessed.csv')
-
-
-# Scindage du dataset en un échantillon test (20%) et train
-
-feats = df_final.drop(columns="RainTomorrow")
-target = df_final["RainTomorrow"]
-
-X_train, X_test, y_train, y_test = \
-    train_test_split(feats, target, test_size=0.20, random_state=1234)
-
-# Scaling
-# Normalisation (à inclure dans un transformer ou une fonction)
-
-# On fit sur Xtrain complet
-
-scaler = MinMaxScaler().fit(X_train)
-X_train_scaled = scaler.transform(X_train)
-X_test_scaled = scaler.transform(X_test)
-X_train_scaled = pd.DataFrame(X_train_scaled, index=X_train.index, columns = X_train.columns)
-X_test_scaled = pd.DataFrame(X_test_scaled, index=X_test.index, columns = X_test.columns)
-
-print(X_train_scaled.describe())
-print(X_test_scaled.describe())
-
-# Sauvegarde fin preprocessing
-
-X_train_scaled.to_csv("../data_saved/X_train_final.csv")
-X_test_scaled.to_csv("../data_saved/X_test_final.csv")
-y_train.to_csv("../data_saved/y_train_final.csv")
-y_test.to_csv("../data_saved/y_test_final.csv")
+#df_final = df_final.drop(columns=["Date", "Location"])
+df_final.to_csv('../data_saved/data_preprocessed_V2.csv')
