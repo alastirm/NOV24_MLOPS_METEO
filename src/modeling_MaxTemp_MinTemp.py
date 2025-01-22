@@ -383,7 +383,7 @@ def model_sarima_MinTemp(df, station_name, output_model):
     plt.figure(figsize=(15, 7))
     plt.plot(train, label="Train", color="black", linewidth=0.8)
     plt.plot(test, label="Test", color="gray", linewidth=0.8)
-    plt.plot(predictions, label="Prédictions", color="red", linestyle="dotted")
+    plt.plot(predictions, label="Prédictions", color="royalblue", linestyle="dotted")
     plt.title(f"MinTemp {station_name} - SARIMA : Prédictions du modèle", fontsize=15)
     plt.xlabel("Date")
     plt.ylabel("Température minimale (°C)")
