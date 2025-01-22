@@ -67,7 +67,7 @@ print(f"\nHead df_location - {station_name} :\n")
 print(df_location.head(), "n")
 
 # Créer un dossier pour sauvegarder les graphes/fichiers des modèles
-output_model = base_dir / "modeling_results" / f"{station_name}"
+output_model = base_dir / "modeling_MaxTemp_MinTemp_results" / f"{station_name}"
 output_model = output_model.resolve()
 if not output_model.exists():
     output_model.mkdir(parents=True)
