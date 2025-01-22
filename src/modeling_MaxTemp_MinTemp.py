@@ -190,11 +190,11 @@ def model_sarima_MaxTemp(df, station_name, output_model):
     evaluation_file = os.path.join(output_model, f"6. {station_name}_MaxTemp_Évaluation_modèle.txt")
     with open(evaluation_file, "w") as f:
         f.write(f"Evaluation du modèle SARIMA pour MaxTemp {station_name} \n\n")
-        f.write(f"Mean Squared Error: {mse}\n")
-        f.write(f"Root Mean Squared Error: {rmse}\n")
-        f.write(f"Mean Absolute Error: {mae}\n")
-        f.write(f"R-squared: {r2}\n")
-        f.write(f"Mean Absolute Percentage Error: {mape}%\n")
+        f.write(f"MSE: {mse}\n")
+        f.write(f"RMSE: {rmse}\n")
+        f.write(f"MAE: {mae}\n")
+        f.write(f"R2: {r2}\n")
+        f.write(f"MAPE: {mape}%\n")
 
     return {"MSE": mse, "RMSE": rmse, "MAE": mae, "R2": r2, "MAPE": mape}
 
@@ -287,11 +287,11 @@ def model_prophet_Maxtemp(df_location, station_name, output_model):
     evaluation_file_prophet = os.path.join(output_model, f"10. {station_name}_MaxTemp_Prophet_Évaluation_modèle.txt")
     with open(evaluation_file_prophet, "w") as f:
         f.write(f"Evaluation du modèle Prophet pour MaxTemp {station_name} \n\n")
-        f.write(f"Mean Squared Error: {mse_prophet}\n")
-        f.write(f"Root Mean Squared Error: {rmse_prophet}\n")
-        f.write(f"Mean Absolute Error: {mae_prophet}\n")
-        f.write(f"R-squared: {r2_prophet}\n")
-        f.write(f"Mean Absolute Percentage Error: {mape_prophet}%\n")
+        f.write(f"MSE: {mse_prophet}\n")
+        f.write(f"RMSE: {rmse_prophet}\n")
+        f.write(f"MAE: {mae_prophet}\n")
+        f.write(f"R2: {r2_prophet}\n")
+        f.write(f"MAPE: {mape_prophet}%\n")
 
 # Modèle SARIMA MinTemp
 def model_sarima_MinTemp(df, station_name, output_model):
@@ -402,11 +402,11 @@ def model_sarima_MinTemp(df, station_name, output_model):
     evaluation_file = os.path.join(output_model, f"6. {station_name}_MinTemp_Évaluation_modèle.txt")
     with open(evaluation_file, "w") as f:
         f.write(f"Evaluation du modèle SARIMA pour MinTemp {station_name} \n\n")
-        f.write(f"Mean Squared Error: {mse}\n")
-        f.write(f"Root Mean Squared Error: {rmse}\n")
-        f.write(f"Mean Absolute Error: {mae}\n")
-        f.write(f"R-squared: {r2}\n")
-        f.write(f"Mean Absolute Percentage Error: {mape}%\n")
+        f.write(f"MSE: {mse}\n")
+        f.write(f"RMSE: {rmse}\n")
+        f.write(f"MAE: {mae}\n")
+        f.write(f"R2: {r2}\n")
+        f.write(f"MAPE: {mape}%\n")
 
     return {"MSE": mse, "RMSE": rmse, "MAE": mae, "R2": r2, "MAPE": mape}
 
@@ -499,11 +499,11 @@ def model_prophet_MinTemp(df_location, station_name, output_model):
     evaluation_file_prophet = os.path.join(output_model, f"10. {station_name}_MinTemp_Prophet_Évaluation_modèle.txt")
     with open(evaluation_file_prophet, "w") as f:
         f.write(f"Evaluation du modèle Prophet pour MinTemp {station_name} \n\n")
-        f.write(f"Mean Squared Error: {mse_prophet}\n")
-        f.write(f"Root Mean Squared Error: {rmse_prophet}\n")
-        f.write(f"Mean Absolute Error: {mae_prophet}\n")
-        f.write(f"R-squared: {r2_prophet}\n")
-        f.write(f"Mean Absolute Percentage Error: {mape_prophet}%\n")
+        f.write(f"MSE: {mse_prophet}\n")
+        f.write(f"REMSE: {rmse_prophet}\n")
+        f.write(f"MAE: {mae_prophet}\n")
+        f.write(f"R2: {r2_prophet}\n")
+        f.write(f"MAPE: {mape_prophet}%\n")
 
 
 ########################################################################################################
