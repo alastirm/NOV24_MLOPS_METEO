@@ -13,8 +13,10 @@ __pycache__
 src\explo*.py
 src/explo*.py
 
-
-
-
+src/data_location_V2
+saved_models
+modeling_results
+src/analyse_series_temp.py
+src/tests
 
 requirements.txt
