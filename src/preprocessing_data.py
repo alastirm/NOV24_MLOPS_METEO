@@ -12,7 +12,7 @@ import preprocess_RainTomorrow
 import preprocess_Date
 import preprocess_Rainfall_RainToday
 import preprocess_wind
-import preprocess_temperatures
+import preprocess_var_quali
 import preprocess_pressure_humidity
 
 # Fonctions encodage
@@ -57,7 +57,7 @@ df = preprocess_Rainfall_RainToday.preprocess_Rainfall_RainToday(df)
 df = preprocess_wind.pipeline_wind_function(df)
 
 # preprocess temperatures
-df = preprocess_temperatures.preprocess_temperature_mean(df, columns=["MinTemp", "MaxTemp", "Temp9am", "Temp3pm"])
+df = preprocess_var_quali.preprocess_median_location_month(df, columns=["MinTemp", "MaxTemp", "Temp9am", "Temp3pm"])
 
 # preprocess pressures et humidities
 # J'ai du ajouter un réindexage car je ne sais pas pourquoi mais la
@@ -110,32 +110,5 @@ print("Dimensions après : ", dim_after_preprocess)
 df_final = df.dropna()
 df_final.columns
 
-# sauvegarde (libre à vous de sauvegarder avant)
-df_final.to_csv('../data_saved/data_preprocessed.csv')
-
-
-# # Scindage du dataset en un échantillon test (20%) et train
-# feats = df_final.drop(columns="RainTomorrow")
-# target = df_final["RainTomorrow"]
-
-# X_train, X_test, y_train, y_test = \
-#     train_test_split(feats, target, test_size=0.20, random_state=1234)
-
-# # Scaling
-# # Normalisation (à inclure dans un transformer ou une fonction)
-
-# vars_to_scale = 'all'
-
-# # On fit sur Xtrain complet
-# scaler = MinMaxScaler().fit(X_train)
-# X_train_scaled = scaler.transform(X_train)
-# X_test_scaled = scaler.transform(X_test)
-
-# X_train_scaled = pd.DataFrame(X_train_scaled, index=X_train.index, columns = X_train.columns)
-# X_test_scaled = pd.DataFrame(X_test_scaled, index=X_test.index, columns = X_test.columns)
-    
-# # Sauvegarde fin preprocessing
-# X_train_scaled.to_csv("../data_saved/X_train_final.csv")
-# X_test_scaled.to_csv("../data_saved/X_test_final.csv")
-# y_train.to_csv("../data_saved/y_train_final.csv")
-# y_test.to_csv("../data_saved/y_test_final.csv")
+# sauvegarde du dataset complet (libre à vous de sauvegarder avant)
+df_final.to_csv('../data_saved/df_final.csv')

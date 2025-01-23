@@ -1,10 +1,12 @@
+# Importer les bibliothèques
+from pathlib import Path
 import pandas as pd
 import numpy as np
-
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import RobustScaler, MinMaxScaler, StandardScaler
-from sklearn.preprocessing import FunctionTransformer
-from sklearn.compose import ColumnTransformer
+import dataframe_image as dfi
+from scipy import stats
+import os
+import sys
+#sys.stdout.reconfigure(encoding="utf-8")
 
 # import de la fonction initialize_data_weatherAU(data_dir)
 import init_data
@@ -23,28 +25,26 @@ import encode_functions
 # pipeline
 from sklearn.pipeline import Pipeline
 
-# Autres fonctions ajoutées
-import functions_created
-
 # chargement des données
 data_dir = "../data/weatherAUS.csv"
 df = init_data.initialize_data_weatherAU(data_dir)
 
 # Vérification chargement
-df.head()
-df.describe()
+print("\n\n")
+print("df head :\n", df.head(), "\n")
+print("df describe :\n", df.describe(), "\n")
+print("df info :\n")
+print(df.info(), "\n")
 
-# print informations
-
+# Informations sur les NaNs
 nas_before_preprocess = pd.DataFrame(df.isna().sum())
 print("Avant Preprocess : \n")
-print("Nombre de Nas")
+print("Nombre de NaNs")
 print(nas_before_preprocess)
-
 dim_before_preprocess = df.shape
-print("Dimensions : ", dim_before_preprocess)
+print("Dimensions : ", dim_before_preprocess, "\n")
 
-# gestion des NAs et preprocessing des variables
+########################################################################################################
 
 # A FAIRE preprocessor = Pipeline(['init'])
 
@@ -53,6 +53,8 @@ df = preprocess_Date.preprocess_Date(df)
 
 # STEP 2 preprocess RainTomorrow
 df = preprocess_RainTomorrow.preprocess_RainTomorrow(df)
+
+########################################################################################################
 
 # STEP 3 remplissage des Nas par les valeurs à proximité #
 
@@ -85,6 +87,8 @@ df_near = pd.read_csv('../data_saved/df_near.csv',
 
 nas_after_near = pd.DataFrame(df_near.isna().sum())
 
+########################################################################################################
+
 # STEP 4 remplissage des Nas restants à par les valeurs médiane par mois et location (méthode Jennifer)
 # on applique uniquement aux variables quantitatives
 
@@ -107,6 +111,8 @@ df_near_median = pipeline_median_location_month.fit_transform(df_near)
 
 nas_after_median = pd.DataFrame(df_near_median.isna().sum())
 
+########################################################################################################*
+
 # STEP 5 remplissage des Nas restants pour les variables quantitatives 
 # par les modes par location et month
 
@@ -116,6 +122,8 @@ transformer_mode_location_month = \
                                                         preprocess_method= "mode_location_month")
 
 df_near_median_mode = transformer_mode_location_month.fit_transform(df_near_median)
+
+########################################################################################################
 
 # STEP 6 remplissage des Nas restants pour les variables quantitatives 
 # par les modes par location et target (méthode Matthieu)
@@ -130,38 +138,17 @@ nas_after_mode = pd.DataFrame(df_near_median_mode.isna().sum())
 
 print(nas_after_mode)
 
+########################################################################################################
+
 # STEP 7 preprocess RainToday (en fonction des Rainfall récupérés)
 df = preprocess_RainToday.preprocess_RainToday(df_near_median_mode)
 df.isna().sum()
 
-# STEP 8 Encodage des variables selon deux types (onehot et trigonométrique)
-# On crée des dummies pour ces variables 
-vars_onehot = ["Climate", "Year"]
+########################################################################################################
 
-# On crée des labels de 1 à n-1 classes pour ces colonnes
-vars_labels = ['Cloud9am', 'Cloud3pm']
-
-# A faire : passer cloud en labelling encoder
-# Les variables avec un encodage trigonometrique sont "WindGustDir", "Month" et "Season" 
-pipeline_encoding = Pipeline([
-    ('Month_encoder', encode_functions.trigo_encoder(col_select="Month")),
-    ('Year_encoder', encode_functions.trigo_encoder(col_select="Season")),
-    ('WindGustDir_encoder', encode_functions.trigo_encoder(col_select="WindGustDir")),
-    ('OneHot_encoder',  encode_functions.encoder_vars(vars_to_encode=vars_onehot, 
-                                                      encoder="OneHotEncoder")),
-    ('Label_encoder',  encode_functions.encoder_vars(vars_to_encode=vars_labels, 
-                                                     encoder="LabelEncoder"))
-    ])
-
-
-df_final = pipeline_encoding.fit_transform(df)
-df_final.drop(columns = ["Month", "Season", "WindGustDir"])
-
-df_final.columns
-df_final.dtypes
 # affichage Nas après preprocessing
 
-nas_after_preprocess = pd.DataFrame(df_final.isna().sum())
+nas_after_preprocess = pd.DataFrame(df.isna().sum())
 nas_after_preprocess = pd.merge(nas_before_preprocess,
                                 nas_after_preprocess,
                                 left_index=True,
@@ -173,10 +160,85 @@ print("Après Preprocess : \n")
 print("Nombre de Nas")
 print(nas_after_preprocess)
 
-dim_after_preprocess = df_final.shape
+dim_after_preprocess = df.shape
 print("Dimensions avant : ", dim_before_preprocess)
 print("Dimensions après : ", dim_after_preprocess)
 
-# On retire les colonnes Date et Location qui sont en index
-#df_final = df_final.drop(columns=["Date", "Location"])
+########################################################################################################
+
+# STEP 8 Encodage des variables selon deux types (onehot et trigonométrique)
+# On crée des dummies pour ces variables 
+vars_onehot = ["Climate", "Year", 'Cloud9am', 'Cloud3pm']
+
+# On crée des labels de 1 à n-1 classes pour ces colonnes
+# vars_labels = ['Cloud9am', 'Cloud3pm']
+
+# A faire : passer cloud en labelling encoder
+# Les variables avec un encodage trigonometrique sont "WindGustDir", "Month" et "Season" 
+pipeline_encoding = Pipeline([
+    ('Month_encoder', encode_functions.trigo_encoder(col_select="Month")),
+    ('Year_encoder', encode_functions.trigo_encoder(col_select="Season")),
+    ('WindGustDir_encoder', encode_functions.trigo_encoder(col_select="WindGustDir")),
+    ('OneHot_encoder',  encode_functions.encoder_vars(vars_to_encode=vars_onehot, 
+                                                      encoder="OneHotEncoder")),
+#    ('Cloud_OrdinalEncoder',  ColumnTransformer((OrdinalEncoder, ['Cloud9am'])))
+    ])
+
+df_final = pipeline_encoding.fit_transform(df)
+df_final = df_final.drop(columns = ["Month", "Season", "WindGustDir"])
+
+########################################################################################################
+
+# Sauvegarde du dataset complet 
 df_final.to_csv('../data_saved/data_preprocessed_V2.csv')
+
+########################################################################################################
+
+# Séparation des données par Location
+
+# Sauvegarder la liste de toutes les Location
+locations = df_final["Location"].unique()
+
+base_dir = Path(__file__).resolve().parent
+output_location = base_dir / "data_location"
+if not output_location.exists():
+    output_location.mkdir(parents=True)
+groupes = df.groupby("Location")
+for location, groupe in groupes:
+    output_path = os.path.join(output_location, f"df_{location}.csv")
+    groupe.to_csv(output_path, index=True)
+    print(f"Le Dataframe df_{location} a été créé")
+
+
+# Nettoyage des fichiers créés
+def remove_columns_NAN(location_names, base_dir:Path, threshold:float=0.3):
+    for location_name in location_names:
+        df_location_path = base_dir / "data_location_V2" / f"df_{location_name}.csv"
+        if not df_location_path.exists():
+            print(f"!! Fichier pour '{location_name}' non trouvé !!")
+            continue
+
+        # Chargement des données
+        df_location = pd.read_csv(df_location_path)
+
+        # Retrait des colonnes inutiles
+        df_location = df_location.drop(columns=["Date", "Location", "Climate"])
+
+        # Calcul du pourcentage de valeurs manquantes
+        missing_percentages = df_location.isna().mean()
+
+        # Colonnes à conserver
+        columns_to_keep = missing_percentages[missing_percentages <= threshold].index
+        df_location_cleaned = df_location[columns_to_keep]
+
+        # Enlever les dernières NaN
+        df_location_cleaned = df_location_cleaned.dropna()
+
+        # Enregistrement
+        output_path = base_dir / "data_location_V2" / f"df_{location_name}.csv"
+        df_location_cleaned.to_csv(output_path, index=False)
+        print(f"Le Fichier {location_name} a été nettoyé et enregistré")
+
+# Appliquer la fonction aux df_location
+remove_columns_NAN(location_names=locations, base_dir=base_dir, threshold=0.3)
+
