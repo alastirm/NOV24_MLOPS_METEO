@@ -17,8 +17,8 @@ def encode_data(X_train, X_test, vars_to_encode, encoder="OneHotEncoder"):
         encoder = OneHotEncoder(handle_unknown='ignore', sparse_output=False,  dtype='int')
     
     # Encodage des variables
-    if encoder ==  "LabelEncoder":
-        encoder = LabelEncoder()
+    if encoder ==  "OrdinalEncoder":
+        encoder = OrdinalEncoder()
 
     # On fit l'encodeur sur les variables voulues sur le jeu d'entrainement
     

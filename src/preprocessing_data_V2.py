@@ -200,7 +200,7 @@ pipeline_encoding = Pipeline([
     ])
 
 df_final = pipeline_encoding.fit_transform(df)
-df_final
+
 # drop les colonnes encodées en nouvelles colonnes
 df_final = df_final.drop(columns=["Month", "Season", "WindGustDir", "WindDir9am", "WindDir3pm"])
 
@@ -216,14 +216,11 @@ df_final.to_csv('../data_saved/data_preprocessed_V2.csv')
 # Sauvegarder la liste de toutes les Location
 locations = df_final["Location"].unique()
 
-# drop les colonnes spécifiques à une location (climate aussi peut-être?)
-df_final = df_final.drop(columns = ['sin_lon','cos_lon', 'sin_lat','cos_lat'])
-
 base_dir = Path(__file__).resolve().parent
 output_location = base_dir / "data_location_V2"
 if not output_location.exists():
     output_location.mkdir(parents=True)
-groupes = df.groupby("Location")
+groupes = df_final.groupby("Location")
 for location, groupe in groupes:
     output_path = os.path.join(output_location, f"df_{location}.csv")
     groupe.to_csv(output_path, index=True)
@@ -241,8 +238,13 @@ def remove_columns_NAN(location_names, base_dir:Path, threshold:float=0.3):
         # Chargement des données
         df_location = pd.read_csv(df_location_path)
 
-        # Retrait des colonnes inutiles
-        df_location = df_location.drop(columns=["Date", "Location", "Climate"])
+        # Retrait des colonnes inutiles spécifiques à une location
+        df_location = df_location.drop(
+            columns=["Date", "Location", 
+                     'Climate_Desert', 'Climate_Grassland',
+                     'Climate_Subtropical', 'Climate_Temperate', 
+                     'Climate_Tropical',
+                     'sin_lon','cos_lon', 'sin_lat','cos_lat'])
 
         # Calcul du pourcentage de valeurs manquantes
         missing_percentages = df_location.isna().mean()
