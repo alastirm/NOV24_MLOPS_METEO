@@ -51,7 +51,7 @@ def location_selection(station_name:str, base_dir:Path):
     print(df_location.head(), "\n")
 
     # Créer un dossier pour sauvegarder les graphes/fichiers des modèles
-    output_model = base_dir / "modeling_MaxTemp_MinTemp_results" / f"{station_name}"
+    output_model = base_dir / f"{variable_name}_modeling_results" / f"{station_name}"
     output_model = output_model.resolve()
     if not output_model.exists():
         output_model.mkdir(parents=True)
@@ -268,7 +268,7 @@ def model_prophet(df, station_name, variable_name, output_model):
 ## Sélection des Location étudiées
 
 variable_name = "MaxTemp"
-station_names = ["Sydney"]
+station_names = ["Sydney", "Adelaide", "AliceSprings", "Brisbane", "Cairns", "Canberra"]
 for station_name in station_names:
     df_location, output_model = location_selection(station_name, base_dir)
     sarima_results = model_sarima(df_location, station_name, variable_name, output_model)
