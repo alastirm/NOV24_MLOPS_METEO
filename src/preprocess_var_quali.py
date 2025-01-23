@@ -11,13 +11,18 @@ def preprocess_median_location_month (df, columns=["MinTemp", "MaxTemp", "Temp9a
         df[col] = df.set_index(["Month", "Location"])[col].fillna(median_values[col]).values
     return df
 
+# Fonction pour appliquer la moyenne des valeurs de la veille et du lendemain
+def preprocess_mean_interpolate(df, columns=["MinTemp", "MaxTemp", "Temp9am", "Temp3pm"]):
+    for col in columns:
+        df[col] = df[col].interpolate(method="linear")
+    return df
+
 # Appeler les fonctions de preprocessing
-# df_median_location = preprocess_temperatures_median_location(df.copy())
-# df_median_climate = preprocess_temperatures_median_climate(df.copy())
-# df_mean = preprocess_temperature_mean(df.copy())
+# df_median_location = preprocess_median_location_month(df.copy())
+# df_mean = preprocess_mean_interpolate(df.copy())
 
 # Vérification des méthodes
-def verification_methodes(df, df_median1, df_median2, df_mean, columns=["MinTemp", "MaxTemp", "Temp9am", "Temp3pm"]):
+def verification_methodes(df, df_median, df_mean, columns=["MinTemp", "MaxTemp", "Temp9am", "Temp3pm"]):
     for col in columns:
 
         # Visualisation graphique
@@ -47,4 +52,4 @@ def verification_methodes(df, df_median1, df_median2, df_mean, columns=["MinTemp
     print(df_mean[columns].isnull().mean() * 100, "\n")
 
 # Appeler la fonction de vérification
-# verification_methodes(df, df_median_location, df_median_climate, df_mean)
+# verification_methodes(df, df_median_location, df_mean)
