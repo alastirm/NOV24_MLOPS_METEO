@@ -8,6 +8,9 @@ import os
 import sys
 #sys.stdout.reconfigure(encoding="utf-8")
 
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder, OrdinalEncoder
+
 # import de la fonction initialize_data_weatherAU(data_dir)
 import init_data
 
@@ -70,7 +73,7 @@ cols_to_fill = ['MinTemp', 'MaxTemp', 'Rainfall',
                 'Cloud9am', 'Cloud3pm', 
                 'Temp9am','Temp3pm']
 
-# création du pipeline de transformers 
+# création du pipeline de transformers
 
 pipeline_nearest = \
     complete_nas_functions.create_complete_nas_pipeline(
@@ -78,7 +81,8 @@ pipeline_nearest = \
         preprocess_method="nearest", # choix de la méthode de preprocessing
         distance_max=50) # choix de la distance max où on cherche une station proche
 
-# Fittransform du pipeline (assez long donc je sauvegarde à l'issue)
+# Fittransform du pipeline (assez long donc je sauvegarde à l'issue)7
+# décommenter les deux lignes suivantes au premier run
 # df_near = complete_nas_transformer_nearest.fit_transform(df)
 # df_near.to_csv('../data_saved/df_near.csv')
 
@@ -168,23 +172,25 @@ print("Dimensions après : ", dim_after_preprocess)
 
 # STEP 8 Encodage des variables selon deux types (onehot et trigonométrique)
 # On crée des dummies pour ces variables 
-vars_onehot = ["Climate", "Year", 'Cloud9am', 'Cloud3pm']
+vars_onehot = ["Climate", "Year"]
 
 # On crée des labels de 1 à n-1 classes pour ces colonnes
-# vars_labels = ['Cloud9am', 'Cloud3pm']
-
+vars_labels = ['Cloud9am', 'Cloud3pm']
 # A faire : passer cloud en labelling encoder
+
 # Les variables avec un encodage trigonometrique sont "WindGustDir", "Month" et "Season" 
 pipeline_encoding = Pipeline([
     ('Month_encoder', encode_functions.trigo_encoder(col_select="Month")),
     ('Year_encoder', encode_functions.trigo_encoder(col_select="Season")),
     ('WindGustDir_encoder', encode_functions.trigo_encoder(col_select="WindGustDir")),
-    ('OneHot_encoder',  encode_functions.encoder_vars(vars_to_encode=vars_onehot, 
-                                                      encoder="OneHotEncoder")),
-#    ('Cloud_OrdinalEncoder',  ColumnTransformer((OrdinalEncoder, ['Cloud9am'])))
+    ('OneHot_encoder',  encode_functions.encoder_vars(
+        vars_to_encode=vars_onehot, 
+        encoder="OneHotEncoder"))
     ])
 
 df_final = pipeline_encoding.fit_transform(df)
+
+# drop les colonnes encodées en nouvelles colonnes
 df_final = df_final.drop(columns = ["Month", "Season", "WindGustDir"])
 
 ########################################################################################################
@@ -200,7 +206,7 @@ df_final.to_csv('../data_saved/data_preprocessed_V2.csv')
 locations = df_final["Location"].unique()
 
 base_dir = Path(__file__).resolve().parent
-output_location = base_dir / "data_location"
+output_location = base_dir / "data_location_V2"
 if not output_location.exists():
     output_location.mkdir(parents=True)
 groupes = df.groupby("Location")
