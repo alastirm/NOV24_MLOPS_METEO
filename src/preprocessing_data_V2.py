@@ -83,7 +83,7 @@ pipeline_nearest = \
 
 # Fittransform du pipeline (assez long donc je sauvegarde à l'issue)7
 # décommenter les deux lignes suivantes au premier run
-# df_near = complete_nas_transformer_nearest.fit_transform(df)
+# df_near = pipeline_nearest.fit_transform(df)
 # df_near.to_csv('../data_saved/df_near.csv')
 
 df_near = pd.read_csv('../data_saved/df_near.csv', 
@@ -191,7 +191,7 @@ pipeline_encoding = Pipeline([
 df_final = pipeline_encoding.fit_transform(df)
 
 # drop les colonnes encodées en nouvelles colonnes
-df_final = df_final.drop(columns = ["Month", "Season", "WindGustDir"])
+df_final = df_final.drop(columns=["Month", "Season", "WindGustDir"])
 
 ########################################################################################################
 
