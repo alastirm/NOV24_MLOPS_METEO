@@ -85,9 +85,8 @@ pipeline_encoding = Pipeline([
 
 df = pipeline_encoding.fit_transform(df)
 
-# On retire les colonnes Date et Location qui sont en index
-# Month et Season qui sont encodées 
-df = df.drop(columns=["Date", "Location", "Month", "Season"])
+# On retire les colonnes Month et Season qui sont encodées 
+df = df.drop(columns=["Month", "Season"])
 
 # Nas after preprocess
 nas_after_preprocess = pd.DataFrame(df.isna().sum())

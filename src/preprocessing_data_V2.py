@@ -18,7 +18,7 @@ import init_data
 import preprocess_RainTomorrow
 import preprocess_Date
 import preprocess_RainToday
-
+import preprocess_Location
 # Fonctions pour compléter les Nas
 import complete_nas_functions
 
@@ -53,6 +53,7 @@ print("Dimensions : ", dim_before_preprocess, "\n")
 
 # STEP 1 preprocess Date
 df = preprocess_Date.preprocess_Date(df)
+df.Year.unique()
 
 # STEP 2 preprocess RainTomorrow
 df = preprocess_RainTomorrow.preprocess_RainTomorrow(df)
@@ -85,6 +86,7 @@ pipeline_nearest = \
 # décommenter les deux lignes suivantes au premier run
 # df_near = pipeline_nearest.fit_transform(df)
 # df_near.to_csv('../data_saved/df_near.csv')
+
 
 df_near = pd.read_csv('../data_saved/df_near.csv', 
                       index_col=["id_Location","id_Date"])
@@ -120,7 +122,7 @@ nas_after_median = pd.DataFrame(df_near_median.isna().sum())
 # STEP 5 remplissage des Nas restants pour les variables quantitatives 
 # par les modes par location et month
 
-cols_to_fill3 = ["WindGustDir", 'Cloud9am', 'Cloud3pm']
+cols_to_fill3 = ["WindGustDir", 'WindDir9am','WindDir3pm','Cloud9am', 'Cloud3pm']
 transformer_mode_location_month = \
     complete_nas_functions.create_complete_nas_pipeline(cols_to_fill = cols_to_fill3, 
                                                         preprocess_method= "mode_location_month")
@@ -148,6 +150,11 @@ print(nas_after_mode)
 df = preprocess_RainToday.preprocess_RainToday(df_near_median_mode)
 df.isna().sum()
 
+
+# STEP 8 preprocess Location (Méthode Mathieu)
+df = preprocess_Location.preprocess_Location(df_near_median_mode)
+df.isna().sum()
+
 ########################################################################################################
 
 # affichage Nas après preprocessing
@@ -168,9 +175,11 @@ dim_after_preprocess = df.shape
 print("Dimensions avant : ", dim_before_preprocess)
 print("Dimensions après : ", dim_after_preprocess)
 
+df.Year.unique()
+
 ########################################################################################################
 
-# STEP 8 Encodage des variables selon deux types (onehot et trigonométrique)
+# STEP 9 Encodage des variables selon deux types (onehot et trigonométrique)
 # On crée des dummies pour ces variables 
 vars_onehot = ["Climate", "Year"]
 
@@ -183,15 +192,17 @@ pipeline_encoding = Pipeline([
     ('Month_encoder', encode_functions.trigo_encoder(col_select="Month")),
     ('Year_encoder', encode_functions.trigo_encoder(col_select="Season")),
     ('WindGustDir_encoder', encode_functions.trigo_encoder(col_select="WindGustDir")),
+    ('WindDir9am_encoder', encode_functions.trigo_encoder(col_select="WindDir9am")),
+    ('WindDir3pm_encoder', encode_functions.trigo_encoder(col_select="WindDir3pm")),
     ('OneHot_encoder',  encode_functions.encoder_vars(
         vars_to_encode=vars_onehot, 
         encoder="OneHotEncoder"))
     ])
 
 df_final = pipeline_encoding.fit_transform(df)
-
+df_final
 # drop les colonnes encodées en nouvelles colonnes
-df_final = df_final.drop(columns=["Month", "Season", "WindGustDir"])
+df_final = df_final.drop(columns=["Month", "Season", "WindGustDir", "WindDir9am", "WindDir3pm"])
 
 ########################################################################################################
 
@@ -200,10 +211,13 @@ df_final.to_csv('../data_saved/data_preprocessed_V2.csv')
 
 ########################################################################################################
 
-# Séparation des données par Location
+# STEP 10 Séparation des données par Location
 
 # Sauvegarder la liste de toutes les Location
 locations = df_final["Location"].unique()
+
+# drop les colonnes spécifiques à une location (climate aussi peut-être?)
+df_final = df_final.drop(columns = ['sin_lon','cos_lon', 'sin_lat','cos_lat'])
 
 base_dir = Path(__file__).resolve().parent
 output_location = base_dir / "data_location_V2"
