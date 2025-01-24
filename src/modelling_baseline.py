@@ -46,13 +46,10 @@ X_train_save = X_train
 X_test_save = X_test
 
 # Choix de 3 modèles 
-dt = DecisionTreeClassifier(max_depth = 1)
-
-
 models_select  = {
     'LogisticRegression': LogisticRegression(max_iter = 500, n_jobs=-1),
     'RandomForestClassifier': RandomForestClassifier(n_jobs=-1),
-    'BaggingClassifier': BaggingClassifier(dt, n_estimators = 500, max_samples = 0.5, max_features = 0.5, n_jobs=-1)
+    'BaggingClassifier': BaggingClassifier(n_estimators = 500, max_samples = 0.5, max_features = 0.5, n_jobs=-1)
 }
 
 
