@@ -46,7 +46,7 @@ def location_selection(station_name:str, base_dir:Path):
     print(df_location.head(), "\n")
 
     # Créer un dossier pour sauvegarder les graphes/fichiers des modèles
-    output_model = base_dir / "times_series_modeling_results" / f"{variable_name}" / f"{station_name}"
+    output_model = base_dir / "Times_Series_Modeling" / f"{station_name}" / f"{variable_name}"
     output_model = output_model.resolve()
     if not output_model.exists():
         output_model.mkdir(parents=True)
@@ -79,7 +79,7 @@ def model_sarima(df, station_name, variable_name, output_model):
     plt.title(f"{variable_name} {station_name} - SARIMA : Évolution de la variable", fontsize=15)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(os.path.join(output_model, f"{station_name}_{variable_name}_Évolution.png"))
+    plt.savefig(os.path.join(output_model, f"{station_name}_{variable_name}_Évolution_Série.png"))
     plt.close()
 
     # Décomposition de la série temporelle
@@ -90,7 +90,7 @@ def model_sarima(df, station_name, variable_name, output_model):
     fig.subplots_adjust(hspace=0.1, wspace=0.1)
     fig.set_dpi(500)
     plt.tight_layout(pad=1.0)
-    plt.savefig(os.path.join(output_model, f"{station_name}_{variable_name}_TimeSeries_Décomposition.png"))
+    plt.savefig(os.path.join(output_model, f"{station_name}_{variable_name}_Décomposition_Série.png"))
     plt.close()
 
     # Diviser les données en ensemble d'entraînement et de test
@@ -123,7 +123,7 @@ def model_sarima(df, station_name, variable_name, output_model):
     sarima_results = sarima_model.fit()
 
     # Sauvegarder le résumé du modèle
-    results_file = os.path.join(output_model, f"{station_name}_{variable_name}_SARIMA_Results.txt")
+    results_file = os.path.join(output_model, f"{station_name}_{variable_name}_SARIMA_Résultats_Modèles.txt")
     with open(results_file, "w") as f:
         f.write(sarima_results.summary().as_text())
 
@@ -139,8 +139,8 @@ def model_sarima(df, station_name, variable_name, output_model):
     })
 
     # Enregistrement des prédictions du modèle SARIMA
-    output_predictions = base_dir / "times_series_modeling_results"
-    predictions_file = os.path.join(output_predictions, f"{station_name}_SARIMA_Predictions.csv")
+    output_predictions = base_dir / "Times_Series_Modeling"
+    predictions_file = os.path.join(output_predictions, f"{station_name}_SARIMA_Prédictions.csv")
     if os.path.exists(predictions_file):
         existing_df = pd.read_csv(predictions_file)
         existing_df["Date"] = pd.to_datetime(existing_df["Date"])
@@ -165,21 +165,33 @@ def model_sarima(df, station_name, variable_name, output_model):
     plt.close()
 
     # Évaluation du modèle
-    mse = mean_squared_error(test, predictions)
-    rmse = np.sqrt(mse)
-    mae = mean_absolute_error(test, predictions)
-    r2 = r2_score(test, predictions)
-    mape = np.mean(np.abs((test - predictions) / test)) * 100
-    evaluation_file = os.path.join(output_model, f"{station_name}_{variable_name}_Évaluation_modèle.txt")
-    with open(evaluation_file, "w") as f:
-        f.write(f"Evaluation du modèle SARIMA pour {variable_name} {station_name} \n\n")
-        f.write(f"MSE: {mse}\n")
-        f.write(f"RMSE: {rmse}\n")
-        f.write(f"MAE: {mae}\n")
-        f.write(f"R2: {r2}\n")
-        f.write(f"MAPE: {mape}%\n")
+    r2 = round(r2_score(test, predictions), 3)
+    mse = round(mean_squared_error(test, predictions), 3)
+    rmse = round(np.sqrt(mse), 3)
+    mae = round(mean_absolute_error(test, predictions), 3)
+    mape = round(np.mean(np.abs((test - predictions) / test)) * 100, 3)
 
-    return {"MSE": mse, "RMSE": rmse, "MAE": mae, "R2": r2, "MAPE": mape}
+    # Enregistrement des évaluations du modèle SARIMA
+    output_evaluation = base_dir / "Times_Series_Modeling"
+    evaluation_file = output_evaluation / f"{station_name}_SARIMA_Évaluation_Modèle.csv"
+    evaluation_data = {
+        "Variable": [variable_name],
+        "R2": [r2],
+        "MSE": [mse],
+        "RMSE": [rmse],
+        "MAE": [mae],
+        "MAPE": [mape]
+    }
+    evaluation_df = pd.DataFrame(evaluation_data)
+    if evaluation_file.exists():
+        old_data = pd.read_csv(evaluation_file)
+        new_data = pd.concat([old_data, evaluation_df], ignore_index=True)
+        new_data.to_csv(evaluation_file, index=False)
+    else:
+        evaluation_df.to_csv(evaluation_file, index=False)
+    print(f"\nLes évaluations SARIMA pour {variable_name} {station_name} ont été enregistrées\n")
+
+    return {"R2": r2, "MSE": mse, "RMSE": rmse, "MAE": mae, "MAPE": mape}
 
 # Modèle Prophet
 def model_prophet(df, station_name, variable_name, output_model):
@@ -203,8 +215,9 @@ def model_prophet(df, station_name, variable_name, output_model):
     
     # Diviser les données en train et test
     train = prophet_df[:int(0.8 * len(prophet_df))]
-    test = prophet_df[int(0.8 * len(prophet_df)):]
-    
+    test = prophet_df[int(0.8 * len(prophet_df)):].copy()
+    test["ds"] = pd.to_datetime(test["ds"])
+
     # Création et ajustement du modèle 
     model = Prophet()
     model.fit(train)
@@ -213,16 +226,22 @@ def model_prophet(df, station_name, variable_name, output_model):
     future = model.make_future_dataframe(periods=len(test), freq="D")
     forecast = model.predict(future)
     forecast["ds"] = pd.to_datetime(forecast["ds"]) # S'assurer que les dates de test sont dans le même format
-    test["ds"] = pd.to_datetime(test["ds"])
-    predictions_df = pd.DataFrame({ # Créer un dataframe avec les observations et les prédictions
-        "Date": test["ds"],
-        f"{variable_name}_Observed": test["y"],
-        f"{variable_name}_Predicted": forecast.loc[forecast["ds"].isin(test["ds"]), "yhat"].values
-    })
+    
+    forecast_test = forecast[forecast["ds"].isin(test["ds"])]  #
+    if len(forecast_test) != len(test):
+        print(f"Attention : longueur différente entre test ({len(test)}) et forecast_test ({len(forecast_test)})")
+        test = test[test["ds"].isin(forecast_test["ds"])]  # Synchroniser les dates entre test et forecast
 
-    # Enregister les prédictions du modèle Prophet
-    output_predictions = base_dir / "times_series_modeling_results"
-    predictions_file = os.path.join(output_predictions, f"{station_name}_Prophet_Predictions.csv")
+    # Créer un dataframe avec les observations et les prédictions
+    predictions_df = pd.DataFrame({
+        "Date": test["ds"].reset_index(drop=True),  # Réinitialiser les index pour éviter les conflits
+        f"{variable_name}_Observed": test["y"].reset_index(drop=True),
+        f"{variable_name}_Predicted": forecast_test["yhat"].reset_index(drop=True)
+    })#
+
+    # Enregistrer les prédictions du modèle Prophet
+    output_predictions = base_dir / "Times_Series_Modeling"
+    predictions_file = os.path.join(output_predictions, f"{station_name}_Prophet_Prédictions.csv")
     if os.path.exists(predictions_file):
         existing_df = pd.read_csv(predictions_file)
         existing_df["Date"] = pd.to_datetime(existing_df["Date"])
@@ -246,43 +265,50 @@ def model_prophet(df, station_name, variable_name, output_model):
     plt.ylabel(f"{variable_name}")
     fig.set_size_inches(20, 8)
     plt.tight_layout()
-    plt.savefig(os.path.join(output_model, f"{station_name}_{variable_name}_Prophet_Predictions.png"))
+    plt.savefig(os.path.join(output_model, f"{station_name}_{variable_name}_Prophet_Prédictions.png"))
     plt.close()
 
     # Sauvegarder les composantes du modèle
     fig_components = model.plot_components(forecast)
-    fig_components.savefig(os.path.join(output_model, f"{station_name}_{variable_name}_Prophet_Components.png"))
+    fig_components.savefig(os.path.join(output_model, f"{station_name}_{variable_name}_Prophet_Composantes.png"))
     plt.close()
 
     # Évaluation des performances
-    forecast = forecast.set_index("ds")
-    predictions = forecast.loc[test["ds"], "yhat"]
-    mse = mean_squared_error(test["y"], predictions)
-    rmse = np.sqrt(mse)
-    mae = mean_absolute_error(test["y"], predictions)
-    r2 = r2_score(test["y"], predictions)
-    mape = np.mean(np.abs((test["y"] - predictions) / test["y"])) * 100
+    r2 = round(r2_score(test["y"], predictions_df[f"{variable_name}_Predicted"]), 3)
+    mse = round(mean_squared_error(test["y"], predictions_df[f"{variable_name}_Predicted"]), 3)
+    rmse = round(np.sqrt(mse), 3)
+    mae = round(mean_absolute_error(test["y"], predictions_df[f"{variable_name}_Predicted"]), 3)
+    mape = round(np.mean(np.abs((test["y"] - predictions_df[f"{variable_name}_Predicted"]) / test["y"])) * 100, 3)
 
-    # Sauvegarder les résultats
-    evaluation_file = os.path.join(output_model, f"{station_name}_{variable_name}_Prophet_Evaluation.txt")
-    with open(evaluation_file, "w") as f:
-        f.write(f"Evaluation du modèle Prophet pour {variable_name} {station_name} \n\n")
-        f.write(f"MSE: {mse}\n")
-        f.write(f"RMSE: {rmse}\n")
-        f.write(f"MAE: {mae}\n")
-        f.write(f"R2: {r2}\n")
-        f.write(f"MAPE: {mape}%\n")
-
-    # Retourner les métriques
-    return {"MSE": mse, "RMSE": rmse, "MAE": mae, "R2": r2, "MAPE": mape}
+    # Enregistrement des évaluations du modèle Prophet
+    output_evaluation = base_dir / "Times_Series_Modeling"
+    evaluation_file = output_evaluation / f"{station_name}_Prophet_Évaluation_Modèle.csv"
+    evaluation_data = {
+        "Variable": [variable_name],
+        "R2": [r2],
+        "MSE": [mse],
+        "RMSE": [rmse],
+        "MAE": [mae],
+        "MAPE": [mape]
+    }
+    evaluation_df = pd.DataFrame(evaluation_data)
+    if evaluation_file.exists():
+        old_data = pd.read_csv(evaluation_file)
+        new_data = pd.concat([old_data, evaluation_df], ignore_index=True)
+        new_data.to_csv(evaluation_file, index=False)
+    else:
+        evaluation_df.to_csv(evaluation_file, index=False)
+    print(f"\nLes évaluations Prophet pour {variable_name} {station_name} ont été enregistrées\n")
+    
+    return {"R2": r2, "MSE": mse, "RMSE": rmse, "MAE": mae, "MAPE": mape}
 
 
 ########################################################################################################
 
 ## Sélection des Location étudiées
 
-#station_names = ["Sydney", "Adelaide", "AliceSprings", "Brisbane", "Cairns", "Canberra", "Darwin", "Hobart", "Melbourne", "Perth", "Uluru"]
-station_names = ["Sydney"]
+station_names = ["Sydney", "Adelaide", "AliceSprings", "Brisbane", "Cairns", "Canberra", "Darwin", "Hobart", "Melbourne", "Perth", "Uluru"]
+#station_names = ["Sydney"]
 
 variable_name = "MaxTemp"
 for station_name in station_names:
