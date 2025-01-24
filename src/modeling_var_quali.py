@@ -97,9 +97,6 @@ def model_sarima(df, station_name, variable_name, output_model):
     train = df[variable_name][:int(0.8 * len(df))]
     test = df[variable_name][int(0.8 * len(df)):]
 
-    # Définir les dates pour le test
-    # test_dates = df["id_Date"].iloc[int(0.8 * len(df)):]
-
     # Diviser les données exogènes et synchronisation des indices
     train_features = df.drop(columns=["id_Date", "id_Location", variable_name]).iloc[:int(0.8 * len(df))]
     test_features = df.drop(columns=["id_Date", "id_Location", variable_name]).iloc[int(0.8 * len(df)):]
@@ -135,7 +132,6 @@ def model_sarima(df, station_name, variable_name, output_model):
                                          end=len(train) + len(test) - 1, 
                                          exog=test_features,
                                          dynamic=False)
-    #predictions.index = test_dates
     predictions_df = pd.DataFrame({
         "Date": predictions.index,
         f"{variable_name}_Observed": test.values,
@@ -153,7 +149,7 @@ def model_sarima(df, station_name, variable_name, output_model):
     else:
         merged_df = predictions_df
     merged_df.to_csv(predictions_file, index=False)
-    print(f"\nLes prédictions pour {variable_name} {station_name} ont été enregistrées \n")
+    print(f"\nLes prédictions SARIMA pour {variable_name} {station_name} ont été enregistrées \n")
 
     # Visualisation des prédictions
     plt.figure(figsize=(15, 7))
@@ -199,6 +195,7 @@ def model_prophet(df, station_name, variable_name, output_model):
     Returns:
         dict: Résultats d'évaluation du modèle (MSE, RMSE, MAE, R2, MAPE).
     """
+    # Vérifier que le répertoire de sortie existe
     os.makedirs(output_model, exist_ok=True)
 
     # Préparer les données pour Prophet
@@ -234,13 +231,20 @@ def model_prophet(df, station_name, variable_name, output_model):
     else:
         merged_df = predictions_df
     merged_df.to_csv(predictions_file, index=False)
-    print(f"\nLes prédictions pour {variable_name} {station_name} ont été enregistrées \n")
+    print(f"\nLes prédictions Prophet pour {variable_name} {station_name} ont été enregistrées \n")
 
     # Visualisation des prédictions
     fig = model.plot(forecast)
+    ax = fig.gca()
+    for line in ax.get_lines():
+        line.set_color("firebrick")
+        line.set_linewidth(0.8)
+    ax.collections[0].set_facecolor("gray")
+    ax.collections[0].set_alpha(0.25)
     plt.title(f"{variable_name} {station_name} - Prophet : Prédictions du modèle", fontsize=15)
     plt.xlabel("Date")
     plt.ylabel(f"{variable_name}")
+    fig.set_size_inches(20, 8)
     plt.tight_layout()
     plt.savefig(os.path.join(output_model, f"{station_name}_{variable_name}_Prophet_Predictions.png"))
     plt.close()
