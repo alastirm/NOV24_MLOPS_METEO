@@ -98,7 +98,7 @@ def model_sarima(df, station_name, variable_name, output_model):
     test = df[variable_name][int(0.8 * len(df)):]
 
     # Définir les dates pour le test
-    test_dates = df["id_Date"].iloc[int(0.8 * len(df)):]
+    # test_dates = df["id_Date"].iloc[int(0.8 * len(df)):]
 
     # Diviser les données exogènes et synchronisation des indices
     train_features = df.drop(columns=["id_Date", "id_Location", variable_name]).iloc[:int(0.8 * len(df))]
@@ -125,9 +125,17 @@ def model_sarima(df, station_name, variable_name, output_model):
                         enforce_invertibility=False)
     sarima_results = sarima_model.fit()
 
+    # Sauvegarder le résumé du modèle
+    results_file = os.path.join(output_model, f"{station_name}_{variable_name}_SARIMA_Results.txt")
+    with open(results_file, "w") as f:
+        f.write(sarima_results.summary().as_text())
+
     # Prédictions du modèle SARIMA
-    predictions = sarima_results.predict(start=len(train), end=len(train) + len(test) - 1, exog=test_features)
-    predictions.index = test_dates
+    predictions = sarima_results.predict(start=len(train), 
+                                         end=len(train) + len(test) - 1, 
+                                         exog=test_features,
+                                         dynamic=False)
+    #predictions.index = test_dates
     predictions_df = pd.DataFrame({
         "Date": predictions.index,
         f"{variable_name}_Observed": test.values,
@@ -145,13 +153,13 @@ def model_sarima(df, station_name, variable_name, output_model):
     else:
         merged_df = predictions_df
     merged_df.to_csv(predictions_file, index=False)
-    print(f"\nLes prédictions pour {variable_name} {station_name} ont été enregistrées dans : {predictions_file} \n")
+    print(f"\nLes prédictions pour {variable_name} {station_name} ont été enregistrées \n")
 
     # Visualisation des prédictions
     plt.figure(figsize=(15, 7))
-    plt.plot(train, label="Train", color="black", linewidth=0.8)
-    plt.plot(test, label="Test", color="gray", linewidth=0.8)
-    plt.plot(predictions, label="Prédictions", color="red", linestyle="dotted")
+    plt.plot(train.index, train, label="Train", color="black", linewidth=0.8)  # Utiliser les dates du train
+    plt.plot(test.index, test, label="Test", color="gray", linewidth=0.8)  # Utiliser les dates du test
+    plt.plot(predictions.index, predictions, label="Prédictions", color="red", linestyle="dotted")  # Utiliser les dates des prédictions
     plt.title(f"{variable_name} {station_name} - SARIMA : Prédictions du modèle", fontsize=15)
     plt.xlabel("Date")
     plt.ylabel(f"{variable_name}")
@@ -226,7 +234,7 @@ def model_prophet(df, station_name, variable_name, output_model):
     else:
         merged_df = predictions_df
     merged_df.to_csv(predictions_file, index=False)
-    print(f"\nLes prédictions pour {variable_name} {station_name} ont été enregistrées dans : {predictions_file} \n")
+    print(f"\nLes prédictions pour {variable_name} {station_name} ont été enregistrées \n")
 
     # Visualisation des prédictions
     fig = model.plot(forecast)
@@ -269,7 +277,8 @@ def model_prophet(df, station_name, variable_name, output_model):
 
 ## Sélection des Location étudiées
 
-station_names = ["Sydney", "Adelaide", "AliceSprings", "Brisbane", "Cairns", "Canberra", "Darwin", "Hobart", "Melbourne", "Perth", "Uluru"]
+#station_names = ["Sydney", "Adelaide", "AliceSprings", "Brisbane", "Cairns", "Canberra", "Darwin", "Hobart", "Melbourne", "Perth", "Uluru"]
+station_names = ["Sydney"]
 
 variable_name = "MaxTemp"
 for station_name in station_names:
@@ -342,5 +351,3 @@ for station_name in station_names:
     df_location, output_model = location_selection(station_name, base_dir)
     sarima_results = model_sarima(df_location, station_name, variable_name, output_model)
     prophet_results = model_prophet(df_location, station_name, variable_name, output_model)
-
-
