@@ -70,6 +70,11 @@ def model_sarima(df, station_name, variable_name, output_model):
     # Vérifier que le répertoire de sortie existe
     os.makedirs(output_model, exist_ok=True)
 
+    # Vérifier si la colonne correspondant à la variable existe
+    if variable_name not in df.columns:
+        print(f"\nLa colonne '{variable_name}' est absente du DataFrame, la modélisation SARIMA est ignorée\n")
+        return {"Error": f"La colonne '{variable_name}' est absente dans le DataFrame"}
+
     # Visualisation de la série temporelle
     plt.figure(figsize=(15, 7))
     plt.plot(df["id_Date"], df[variable_name], linewidth=0.8, label=variable_name, color="navy")
@@ -209,6 +214,12 @@ def model_prophet(df, station_name, variable_name, output_model):
     """
     # Vérifier que le répertoire de sortie existe
     os.makedirs(output_model, exist_ok=True)
+
+    # Vérifier si la colonne correspondant à la variable existe
+    if variable_name not in df.columns:
+        print(f"\nLa colonne '{variable_name}' est absente du DataFrame, la modélisation Prophet est ignorée\n")
+        return {"Error": f"La colonne '{variable_name}' est absente dans le DataFrame"}
+
 
     # Préparer les données pour Prophet
     prophet_df = df[["id_Date", variable_name]].rename(columns={"id_Date": "ds", variable_name: "y"})
