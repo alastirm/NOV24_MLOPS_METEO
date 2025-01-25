@@ -73,7 +73,7 @@ def model_sarima(df, station_name, variable_name, output_model):
     # Vérifier si la colonne correspondant à la variable existe
     if variable_name not in df.columns:
         print(f"\nLa colonne '{variable_name}' est absente du DataFrame, la modélisation SARIMA est ignorée\n")
-        return {"Error": f"La colonne '{variable_name}' est absente dans le DataFrame"}
+        return {"Error": f"La colonne '{variable_name}' est absente dans le DataFrame de {station_name}"}
 
     # Visualisation de la série temporelle
     plt.figure(figsize=(15, 7))
@@ -178,8 +178,9 @@ def model_sarima(df, station_name, variable_name, output_model):
 
     # Enregistrement des évaluations du modèle SARIMA
     output_evaluation = base_dir / "Times_Series_Modeling"
-    evaluation_file = output_evaluation / f"{station_name}_SARIMA_Évaluation_Modèle.csv"
+    evaluation_file = output_evaluation / "1_SARIMA_Évaluation_Modèle.csv"
     evaluation_data = {
+        "Location": [station_name],
         "Variable": [variable_name],
         "R2": [r2],
         "MSE": [mse],
@@ -218,7 +219,7 @@ def model_prophet(df, station_name, variable_name, output_model):
     # Vérifier si la colonne correspondant à la variable existe
     if variable_name not in df.columns:
         print(f"\nLa colonne '{variable_name}' est absente du DataFrame, la modélisation Prophet est ignorée\n")
-        return {"Error": f"La colonne '{variable_name}' est absente dans le DataFrame"}
+        return {"Error": f"La colonne '{variable_name}' est absente dans le DataFrame de {station_name}"}
 
 
     # Préparer les données pour Prophet
@@ -293,8 +294,9 @@ def model_prophet(df, station_name, variable_name, output_model):
 
     # Enregistrement des évaluations du modèle Prophet
     output_evaluation = base_dir / "Times_Series_Modeling"
-    evaluation_file = output_evaluation / f"{station_name}_Prophet_Évaluation_Modèle.csv"
+    evaluation_file = output_evaluation / "2_Prophet_Évaluation_Modèle.csv"
     evaluation_data = {
+        "Location": [station_name],
         "Variable": [variable_name],
         "R2": [r2],
         "MSE": [mse],
