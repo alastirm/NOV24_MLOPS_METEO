@@ -178,8 +178,9 @@ def model_sarima(df, station_name, variable_name, output_model):
 
     # Enregistrement des évaluations du modèle SARIMA
     output_evaluation = base_dir / "Times_Series_Modeling"
-    evaluation_file = output_evaluation / "1_SARIMA_Évaluation_Modèle.csv"
+    evaluation_file = output_evaluation / "1.Évaluation_Modèle.csv"
     evaluation_data = {
+        "Model": ["SARIMA"],
         "Location": [station_name],
         "Variable": [variable_name],
         "R2": [r2],
@@ -293,8 +294,9 @@ def model_prophet(df, station_name, variable_name, output_model):
 
     # Enregistrement des évaluations du modèle Prophet
     output_evaluation = base_dir / "Times_Series_Modeling"
-    evaluation_file = output_evaluation / "2_Prophet_Évaluation_Modèle.csv"
+    evaluation_file = output_evaluation / "1.Évaluation_Modèle.csv"
     evaluation_data = {
+        "Model": ["Prophet"],
         "Location": [station_name],
         "Variable": [variable_name],
         "R2": [r2],
@@ -389,6 +391,43 @@ for station_name in station_names:
     prophet_results = model_prophet(df_location, station_name, variable_name, output_model)
 
 variable_name = "Cloud3pm"
+for station_name in station_names:
+    df_location, output_model = location_selection(station_name, base_dir)
+    sarima_results = model_sarima(df_location, station_name, variable_name, output_model)
+    prophet_results = model_prophet(df_location, station_name, variable_name, output_model)
+
+variable_name = "WindGustDir_cos"
+for station_name in station_names:
+    df_location, output_model = location_selection(station_name, base_dir)
+    sarima_results = model_sarima(df_location, station_name, variable_name, output_model)
+    prophet_results = model_prophet(df_location, station_name, variable_name, output_model)
+
+variable_name = "WindGustDir_sin"
+for station_name in station_names:
+    df_location, output_model = location_selection(station_name, base_dir)
+    sarima_results = model_sarima(df_location, station_name, variable_name, output_model)
+    prophet_results = model_prophet(df_location, station_name, variable_name, output_model)
+
+
+variable_name = "WindDir9am_cos"
+for station_name in station_names:
+    df_location, output_model = location_selection(station_name, base_dir)
+    sarima_results = model_sarima(df_location, station_name, variable_name, output_model)
+    prophet_results = model_prophet(df_location, station_name, variable_name, output_model)
+
+variable_name = "WindDir9am_sin"
+for station_name in station_names:
+    df_location, output_model = location_selection(station_name, base_dir)
+    sarima_results = model_sarima(df_location, station_name, variable_name, output_model)
+    prophet_results = model_prophet(df_location, station_name, variable_name, output_model)
+
+variable_name = "WindDir3pm_cos"
+for station_name in station_names:
+    df_location, output_model = location_selection(station_name, base_dir)
+    sarima_results = model_sarima(df_location, station_name, variable_name, output_model)
+    prophet_results = model_prophet(df_location, station_name, variable_name, output_model)
+
+variable_name = "WindDir3pm_sin"
 for station_name in station_names:
     df_location, output_model = location_selection(station_name, base_dir)
     sarima_results = model_sarima(df_location, station_name, variable_name, output_model)
