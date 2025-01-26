@@ -72,8 +72,8 @@ def model_sarima(df, station_name, variable_name, output_model):
 
     # Vérifier si la colonne correspondant à la variable existe
     if variable_name not in df.columns:
-        print(f"\nLa colonne '{variable_name}' est absente du DataFrame, la modélisation SARIMA est ignorée\n")
-        return {"Error": f"La colonne '{variable_name}' est absente dans le DataFrame de {station_name}"}
+        print(f"\nLa colonne '{variable_name}' est absente du DataFrame {station_name}, la modélisation SARIMA est ignorée\n")
+        return None
 
     # Visualisation de la série temporelle
     plt.figure(figsize=(15, 7))
@@ -218,9 +218,8 @@ def model_prophet(df, station_name, variable_name, output_model):
 
     # Vérifier si la colonne correspondant à la variable existe
     if variable_name not in df.columns:
-        print(f"\nLa colonne '{variable_name}' est absente du DataFrame, la modélisation Prophet est ignorée\n")
-        return {"Error": f"La colonne '{variable_name}' est absente dans le DataFrame de {station_name}"}
-
+        print(f"\nLa colonne '{variable_name}' est absente du DataFrame {station_name}, la modélisation Prophet est ignorée\n")
+        return None
 
     # Préparer les données pour Prophet
     prophet_df = df[["id_Date", variable_name]].rename(columns={"id_Date": "ds", variable_name: "y"})
@@ -321,7 +320,7 @@ def model_prophet(df, station_name, variable_name, output_model):
 ## Sélection des Location étudiées
 
 station_names = ["Sydney", "Adelaide", "AliceSprings", "Brisbane", "Cairns", "Canberra", "Darwin", "Hobart", "Melbourne", "Perth", "Uluru"]
-#station_names = ["Sydney"]
+#station_names = ["Uluru"]
 
 variable_name = "MaxTemp"
 for station_name in station_names:
