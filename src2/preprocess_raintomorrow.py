@@ -13,6 +13,9 @@ class raintomorrow_transformer(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
 
+        X['lag_raintomorrow'] = X['RainTomorrow'].shift()
+        X['lag_raintomorrow'] = X['lag_raintomorrow'].replace(['Yes', 'No'], [1, 0])
+
         X['RainTomorrow'] = X['RainTomorrow'].replace(['Yes', 'No'], [1, 0])
         X.dropna(subset = 'RainTomorrow', inplace = True)
 
