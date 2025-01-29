@@ -38,7 +38,7 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler
 
 # sauvegarde model
 import pickle
-
+import itertools
 
 # fonction de séparation test / train selon deux méthodes 
 
@@ -444,3 +444,47 @@ def plot_model_results(model_name, model_dir, graph_dir,
     
     plt.savefig(graph_dir + ".png", bbox_inches="tight")
 
+
+
+def compare_model_results(modeling_batch, model_qual, model_list, 
+                          location_list,metrics_list,class_label):
+    
+    index_results = list(itertools.product(location_list, model_list))
+    index_results = pd.MultiIndex.from_tuples(index_results , 
+                                          names=["Location", "model_name"])
+    table_results = pd.DataFrame(index = index_results, columns=[metrics_list] )
+    table_results["accuracy"]=""
+
+    for model_name in model_list:
+
+        for select_location in location_list:
+            
+            df_location =  pd.read_csv("../src/data_location_V2/df_" + select_location + ".csv", index_col=["id_Location","id_Date"])
+            
+            X_train, X_test, y_train, y_test = \
+                separation_train_test(df_location, 
+                                    sep_method = "temporelle", 
+                                    col_target = "RainTomorrow")
+            X_train_scaled, X_test_scaled = scaling(X_train, X_test, scaler = MinMaxScaler())
+            
+            model_dir =  "../saved_models/location/" + modeling_batch + \
+            select_location + "_" + model_qual + "_" + model_name
+            
+            with open(model_dir + '.pkl', 'rb') as f:
+                model = pickle.load(f)
+
+            list_model = {}
+            list_model[model_name] = model
+            report, cm, models = fit_models(list_model, 
+                X_train, X_test, y_train, y_test,
+                save_model=False,
+                save_results=False)
+
+            table_results.loc[(select_location,model_name),"accuracy"] = \
+                report[model_name].loc["accuracy","precision"]
+            for m in metrics_list:
+                table_results.loc[(select_location,model_name),m] = \
+                report[model_name].loc[class_label,m]
+
+
+    return table_results
