@@ -66,13 +66,13 @@ nas_before_near = pd.DataFrame(df.isna().sum())
 
 # Choix des colonnes à compléter
 cols_to_fill = ['MinTemp', 'MaxTemp', 'Rainfall', 
-                'Evaporation','Sunshine', 
+                'Evaporation', 'Sunshine', 
                 'WindGustDir', 'WindGustSpeed', 'WindDir9am', 
-                'WindDir3pm','WindSpeed9am', 'WindSpeed3pm', 
+                'WindDir3pm', 'WindSpeed9am', 'WindSpeed3pm', 
                 'Humidity9am', 'Humidity3pm',
                 'Pressure9am', 'Pressure3pm', 
-                'Cloud9am', 'Cloud3pm', 
-                'Temp9am','Temp3pm']
+                'Cloud9am',  'Cloud3pm', 
+                'Temp9am', 'Temp3pm']
 
 # création du pipeline de transformers
 
@@ -181,7 +181,7 @@ df.Year.unique()
 
 # STEP 9 Encodage des variables selon deux types (onehot et trigonométrique)
 # On crée des dummies pour ces variables 
-vars_onehot = ["Climate", "Year"]
+vars_onehot = ["Climate", "Year", "Location"]
 
 # On crée des labels de 1 à n-1 classes pour ces colonnes
 vars_labels = ['Cloud9am', 'Cloud3pm']
@@ -209,12 +209,17 @@ df_final = df_final.drop(columns=["Month", "Season", "WindGustDir", "WindDir9am"
 # Sauvegarde du dataset complet 
 df_final.to_csv('../data_saved/data_preprocessed_V2.csv')
 
+df_final.columns
+
 ########################################################################################################
 
 # STEP 10 Séparation des données par Location
 
 # Sauvegarder la liste de toutes les Location
-locations = df_final["Location"].unique()
+locations = np.unique(df_final.index.get_level_values(0).values)
+locations_dummies = "Location_" + locations
+df_final["Location"] = df_final.index.get_level_values(0).values
+df_final.drop(columns = locations_dummies)
 
 base_dir = Path(__file__).resolve().parent
 output_location = base_dir / "data_location_V2"
@@ -246,6 +251,8 @@ def remove_columns_NAN(location_names, base_dir:Path, threshold:float=0.3):
                      'Climate_Tropical',
                      'sin_lon','cos_lon', 'sin_lat','cos_lat'])
 
+        
+
         # Calcul du pourcentage de valeurs manquantes
         missing_percentages = df_location.isna().mean()
 
@@ -264,3 +271,16 @@ def remove_columns_NAN(location_names, base_dir:Path, threshold:float=0.3):
 # Appliquer la fonction aux df_location
 remove_columns_NAN(location_names=locations, base_dir=base_dir, threshold=0.3)
 
+# Test affichage du pipeline global : 
+
+preprocessor = Pipeline(
+    steps = [
+        ('Nearest', pipeline_nearest),
+        ('Median_location_month', pipeline_median_location_month),
+        ('Mode_location_month', transformer_mode_location_month),
+        ('Mode_location_target', transformer_mode_target),
+        ('Encoding', pipeline_encoding)
+    ]
+)
+
+preprocessor
