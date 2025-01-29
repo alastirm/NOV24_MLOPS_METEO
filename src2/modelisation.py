@@ -4,12 +4,8 @@ import numpy as np
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, f1_score, roc_auc_score, precision_recall_curve, brier_score_loss
-
 from sklearn.preprocessing import MinMaxScaler
-
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.calibration import IsotonicRegression
-
 
 
 def modelisation(df):
@@ -47,12 +43,8 @@ def modelisation(df):
 
     y_pred_prob1 = model.predict_proba(X_test_scaled)[:, 1]
 
-    ir = IsotonicRegression(out_of_bounds='clip')
-    y_pred_prob1_calibrated = ir.fit_transform(y_pred_prob1, y_test)
-
-    #calcul automatique du meilleur seuil
     if y_train.value_counts(normalize = True)[1] < 0.15:
-        threshold = 0.165
+            threshold = 0.165
     if y_train.value_counts(normalize = True)[1] > 0.30:
         threshold = 0.85
     else:
@@ -72,5 +64,3 @@ def modelisation(df):
 
     print(confusion_matrix(y_test, y_pred), '\n\n')
     print(classification_report(y_test, y_pred))
-
-# print
