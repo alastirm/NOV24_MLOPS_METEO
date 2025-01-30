@@ -19,6 +19,8 @@ import preprocess_RainTomorrow
 import preprocess_Date
 import preprocess_RainToday
 import preprocess_Location
+import preprocess_lagvars
+
 # Fonctions pour compléter les Nas
 import complete_nas_functions
 
@@ -204,10 +206,31 @@ df_final = pipeline_encoding.fit_transform(df)
 # drop les colonnes encodées en nouvelles colonnes
 df_final = df_final.drop(columns=["Month", "Season", "WindGustDir", "WindDir9am", "WindDir3pm"])
 
+# STEP 10 ajout de variables lags et diff
+
+df_final["Date"] = pd.to_datetime(df_final["Date"])
+df_final["Location"] = df_final.index.get_level_values(0)
+df_final = df_final.set_index(["Location", "Date"])
+df_final = df_final.reindex(df_final.index.rename({"Location": "id_Location", "Date" : "id_Date"}))
+
+# choix des variables pour lesquelles on calcule 3 lags de 3 jours et une moyenne sur 3 jours
+lag_vars = ["MinTemp", "MaxTemp", 
+            "Evaporation", 'WindGustSpeed',
+            'Sunshine', 'Humidity9am', 'Pressure9am', 'Temp9am',
+            'Rainfall']
+
+# variables pour lesquelles on calcule la variation entre 9am et 3pm
+diff_vars = ["WindSpeed","Humidity","Pressure","Temp","Cloud"]
+
+df_final = preprocess_lagvars.add_lagdelta_vars(df_final, 
+                                               lag_vars, diff_vars)
+
+check_na = pd.DataFrame(df_final.isna().sum())
+df_final.describe()
 ########################################################################################################
 
 # Sauvegarde du dataset complet 
-df_final.to_csv('../data_saved/data_preprocessed_V2.csv')
+df_final.to_csv('../data_saved/data_preprocessed_V3.csv')
 
 df_final.columns
 
@@ -219,10 +242,11 @@ df_final.columns
 locations = np.unique(df_final.index.get_level_values(0).values)
 locations_dummies = "Location_" + locations
 df_final["Location"] = df_final.index.get_level_values(0).values
-df_final = df_final.drop(columns = locations_dummies)
+df_final = df_final.drop(columns=locations_dummies)
+df_final.isna().mean()
 
 base_dir = Path(__file__).resolve().parent
-output_location = base_dir / "data_location_V2"
+output_location = base_dir / "data_location_V3"
 if not output_location.exists():
     output_location.mkdir(parents=True)
 groupes = df_final.groupby("Location")
@@ -235,7 +259,7 @@ for location, groupe in groupes:
 # Nettoyage des fichiers créés
 def remove_columns_NAN(location_names, base_dir:Path, threshold:float=0.3):
     for location_name in location_names:
-        df_location_path = base_dir / "data_location_V2" / f"df_{location_name}.csv"
+        df_location_path = base_dir / "data_location_V3" / f"df_{location_name}.csv"
         if not df_location_path.exists():
             print(f"!! Fichier pour '{location_name}' non trouvé !!")
             continue
@@ -245,13 +269,11 @@ def remove_columns_NAN(location_names, base_dir:Path, threshold:float=0.3):
 
         # Retrait des colonnes inutiles spécifiques à une location
         df_location = df_location.drop(
-            columns=["Date", "Location", 
+            columns=["Location", 
                      'Climate_Desert', 'Climate_Grassland',
                      'Climate_Subtropical', 'Climate_Temperate', 
                      'Climate_Tropical',
                      'sin_lon','cos_lon', 'sin_lat','cos_lat'])
-
-        
 
         # Calcul du pourcentage de valeurs manquantes
         missing_percentages = df_location.isna().mean()
@@ -264,7 +286,7 @@ def remove_columns_NAN(location_names, base_dir:Path, threshold:float=0.3):
         df_location_cleaned = df_location_cleaned.dropna()
 
         # Enregistrement
-        output_path = base_dir / "data_location_V2" / f"df_{location_name}.csv"
+        output_path = base_dir / "data_location_V3" / f"df_{location_name}.csv"
         df_location_cleaned.to_csv(output_path, index=False)
         print(f"Le Fichier {location_name} a été nettoyé et enregistré")
 
