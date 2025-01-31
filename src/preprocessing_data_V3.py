@@ -65,7 +65,7 @@ df = preprocess_RainTomorrow.preprocess_RainTomorrow(df)
 # STEP 3 remplissage des Nas par les valeurs à proximité #
 
 nas_before_near = pd.DataFrame(df.isna().sum())
-
+print(nas_before_near)
 # Choix des colonnes à compléter
 cols_to_fill = ['MinTemp', 'MaxTemp', 'Rainfall', 
                 'Evaporation', 'Sunshine', 
@@ -94,7 +94,7 @@ df_near = pd.read_csv('../data_saved/df_near.csv',
                       index_col=["id_Location","id_Date"])
 
 nas_after_near = pd.DataFrame(df_near.isna().sum())
-
+print(nas_before_near-nas_after_near)
 ########################################################################################################
 
 # STEP 4 remplissage des Nas restants à par les valeurs médiane par mois et location (méthode Jennifer)
@@ -118,7 +118,7 @@ df_median = pipeline_median_location_month.fit_transform(df)
 df_near_median = pipeline_median_location_month.fit_transform(df_near)
 
 nas_after_median = pd.DataFrame(df_near_median.isna().sum())
-
+print(nas_after_near-nas_after_median)
 ########################################################################################################*
 
 # STEP 5 remplissage des Nas restants pour les variables quantitatives 
@@ -130,6 +130,8 @@ transformer_mode_location_month = \
                                                         preprocess_method= "mode_location_month")
 
 df_near_median_mode = transformer_mode_location_month.fit_transform(df_near_median)
+nas_after_mode1 = pd.DataFrame(df_near_median_mode.isna().sum())
+print(nas_after_median- nas_after_mode1)
 
 ########################################################################################################
 
@@ -142,9 +144,9 @@ transformer_mode_target = \
 
 df_near_median_mode = transformer_mode_target.fit_transform(df_near_median_mode)
 
-nas_after_mode = pd.DataFrame(df_near_median_mode.isna().sum())
+nas_after_mode2 = pd.DataFrame(df_near_median_mode.isna().sum())
 
-print(nas_after_mode)
+print(nas_after_mode1 - nas_after_mode2)
 
 ########################################################################################################
 

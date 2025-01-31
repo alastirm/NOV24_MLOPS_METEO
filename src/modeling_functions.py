@@ -39,6 +39,7 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler
 # sauvegarde model
 import pickle
 import itertools
+import os
 
 # fonction de séparation test / train selon deux méthodes 
 
@@ -219,6 +220,69 @@ def resample(X_train, y_train, resampler = SMOTE()):
     return X_sm, y_sm
 
 
+
+def plot_model_results(model_name, model_dir, graph_dir, 
+                       graph_title,
+                       X_train, X_test, y_train, y_test):
+    
+
+    with open(model_dir + '.pkl', 'rb') as f:
+        model = pickle.load(f)
+
+    list_model = {}
+    list_model[model_name] = model
+    report, cm, models = \
+        fit_models(list_model, 
+        X_train, X_test,y_train, y_test,
+        save_model=False,
+        save_results=False)
+    
+
+    report[model_name] = report[model_name].apply(lambda x: round(x, ndigits=2))
+    report[model_name].loc["accuracy"] =[report[model_name].loc["accuracy","precision"],"","",""]
+    plt.figure(figsize=(16, 12))
+    # Graph des coeff de la LogisticRegression
+    if type(model).__name__ == 'LogisticRegression': 
+            serie_coef = pd.Series(model.coef_[0], 
+                    X_train.columns).sort_values(ascending=False)
+            index_toplot = list(np.arange(0, 10, 1))
+            for x in list(np.arange(-10, -1, 1)):
+                    index_toplot.append(x) 
+                    serie_coef.iloc[index_toplot].plot(kind='barh', figsize=(15,20));
+            plt.title("Coefficients " + graph_title)
+            
+
+
+    if (type(model).__name__ == 'RandomForestClassifier') or (type(model).__name__ == "BalancedRandomForestClassifier"):  
+            # features importances 
+            feat_importances = pd.Series(
+            model.feature_importances_, index=X_train.columns)
+            feat_importances.nlargest(20).plot(kind='barh');
+            plt.title("Features importance " + graph_title)
+
+    plt.subplots_adjust(left=0.2, bottom=0.4)
+    table_cm = plt.table(cellText=cm[model_name].values,
+            rowLabels=cm[model_name].index,
+            colLabels=cm[model_name].columns,
+            cellLoc = 'center', rowLoc = 'center',
+            transform=plt.gcf().transFigure,
+            bbox = ([0.1, 0.25, 0.3, 0.1]))
+    table_cm.auto_set_font_size(False)
+    table_cm.set_fontsize(10)
+            
+    table_report = plt.table(cellText=report[model_name].values,
+            rowLabels=report[model_name].index,
+            colLabels=report[model_name].columns,
+            cellLoc = 'center', rowLoc = 'center',
+            transform=plt.gcf().transFigure,
+            bbox = ([0.6, 0.25, 0.3, 0.1]))
+    table_report.auto_set_font_size(False)
+    table_report.set_fontsize(10)
+    
+    plt.savefig(graph_dir + ".png", bbox_inches="tight")
+
+
+
 # Fonction d'optimisation deshyperparamètres
 
 # Dictionnaire pour stocker les résultats (njobs -1)
@@ -291,6 +355,102 @@ def optimize_parameters(model_name, model,
     return results_search, search
 
 
+def modeling_global(model_name, model, dataset, modeling_batch, param_grids,
+                    grid_metrics, variable_cible, n_coef_graph,
+                    X_train_search, X_test_search, y_train_search,  y_test_search):
+    
+    for scoring_name, scoring in grid_metrics.items():
+
+        # crée les dossiers de résultats 
+        results_dir = "../modeling_results/global/" + \
+            dataset + "/" + modeling_batch + "/"
+        model_dir = "../saved_models/global/" + \
+            dataset + "/" + modeling_batch + "/"
+
+        os.makedirs(os.path.dirname(model_dir), exist_ok=True)
+        os.makedirs(os.path.dirname(results_dir), exist_ok=True)
+
+        # lance le grid search
+        print("Métrique de recherche :", scoring_name)
+        results_search_lr, search_lr = optimize_parameters(
+            model_name, model, 
+            param_grids[model_name],  
+            X_train_search, X_test_search,
+            y_train_search,  y_test_search,
+            scoring=scoring)
+
+        # save le search
+        with open(model_dir + scoring_name + model_name + 'search.pkl', 'wb') as f:
+                    pickle.dump(search_lr, f)
+
+
+        # fit et sauvegarde (pickle, résultats) le meilleur modèle 
+        best_params_lr = results_search_lr["LogisticRegression"]["GridSearchCV"]["best_params"]
+        lr_best = search_lr.best_estimator_
+
+        models_select_best = {(model_name + "_tuned"): lr_best}
+
+        report, cm, models = \
+            fit_models(models_select_best, X_train_search, 
+                       X_test_search, y_train_search, y_test_search,
+                       save_model=True, 
+                       save_models_dir=model_dir + scoring_name +"_",
+                       save_results=True, save_results_dir=results_dir + scoring_name + "_")
+
+        report[model_name + "_tuned"] = report[model_name + "_tuned"].apply(lambda x: round(x, ndigits=2))
+        report[model_name + "_tuned"].loc["accuracy"] = [report[model_name + "_tuned"].loc["accuracy","precision"],"","",""]
+        
+        # Réalise un graphique de synthèse et le sauvegarde 
+
+        graph_title = "\n Location : all" +\
+            "\n Modèle : " + modeling_batch + " " + model_name +\
+            "\n Variable cible : " + variable_cible + \
+            "\n scoring du gridsearch : " + scoring_name + \
+            "\n dataset : " + dataset 
+    
+        model = models_select_best[model_name + "_tuned"]
+    
+        plt.figure(figsize=(16, 12))
+        # Graph des coeff de la LogisticRegression
+        if type(model).__name__ == 'LogisticRegression': 
+                serie_coef = pd.Series(model.coef_[0], 
+                        X_train_search.columns).sort_values(ascending=False)
+                index_toplot = list(np.arange(0, n_coef_graph /2, 1))
+                for x in list(np.arange(-n_coef_graph/2, -1, 1)):
+                        index_toplot.append(x) 
+                serie_coef.iloc[index_toplot].plot(kind='barh', figsize=(15,20));
+                plt.title("Coefficients " + graph_title)
+                
+        if (type(model).__name__ == 'RandomForestClassifier') or (type(model).__name__ == "BalancedRandomForestClassifier"):  
+                # features importances 
+                feat_importances = pd.Series(
+                model.feature_importances_, index=X_train_search.columns)
+                feat_importances.nlargest(n_coef_graph).plot(kind='barh');
+                plt.title("Features importance " + graph_title)
+
+        plt.subplots_adjust(left=0.2, bottom=0.4)
+        table_cm = plt.table(cellText=cm[model_name + "_tuned"].values,
+                rowLabels=cm[model_name + "_tuned"].index,
+                colLabels=cm[model_name + "_tuned"].columns,
+                cellLoc = 'center', rowLoc = 'center',
+                transform=plt.gcf().transFigure,
+                bbox = ([0.1, 0.25, 0.3, 0.1]))
+        table_cm.auto_set_font_size(False)
+        table_cm.set_fontsize(10)
+                
+        table_report = plt.table(cellText=report[model_name + "_tuned"].values,
+                rowLabels=report[model_name + "_tuned"].index,
+                colLabels=report[model_name + "_tuned"].columns,
+                cellLoc = 'center', rowLoc = 'center',
+                transform=plt.gcf().transFigure,
+                bbox = ([0.6, 0.25, 0.3, 0.1]))
+        table_report.auto_set_font_size(False)
+        table_report.set_fontsize(10)
+        
+        plt.savefig(results_dir + scoring_name + "_" + model_name +  "_tuned.png", bbox_inches="tight")
+
+    return "GridSearchjFinished"
+
 
 # fonction pour modéliser l'ensemble de la chaîne sur une location
 
@@ -352,99 +512,22 @@ def modeling_location(select_location,
 
     for model_name, model in models_select.items():
     
-
         model_dir = "../saved_models/location/" + save_name + select_location + "_best_" + model_name
         with open(model_dir + '.pkl', 'rb') as f:
             model = pickle.load(f)
 
-        # Graph des coeff de la LogisticRegression
-        if type(model).__name__ == 'LogisticRegression': 
+        graph_dir = "../modeling_results/location/"+ save_name + select_location + "_best_" + model_name
 
-            pd.Series(model.coef_[0], 
-                    X_train.columns).sort_values(ascending=False)\
-                        .plot(kind='barh', figsize=(15,20));
-            plt.title("Coefficients " + select_location + " " + model_name)
+        graph_title = "\n Location : " + select_location +\
+        "\n Modèle : " + model_name +\
+        "\n scoring du gridsearch : " + scoring  
+        
+        plot_model_results(model_name, model_dir, graph_dir, 
+                           graph_title,
+                           X_train_scaled, X_test_scaled, y_train, y_test)
 
-            graph_dir = "../modeling_results/location/"+ save_name + select_location + "_best_" + model_name
-            plt.savefig(graph_dir + ".png")
-
-        # Graph des Features importances pour le RandomForest
-        if (type(model).__name__ == 'RandomForestClassifier') or (type(model).__name__ == "BalancedRandomForestClassifier"):  
-
-            # features importances 
-            feat_importances = pd.Series(
-                model.feature_importances_, index=X_train.columns)
-            fig = plt.figure(figsize = (12,10))
-            feat_importances.nlargest(20).plot(kind='barh');
-            plt.title("Features importance " + select_location + " " + model_name)
-
-            graph_dir = "../modeling_results/location/"+ save_name + select_location + "_best_" + model_name
-            fig.savefig(graph_dir + ".png")
 
     return results_search, search
-
-
-def plot_model_results(model_name, model_dir, graph_dir, 
-                       graph_title,
-                       X_train, X_test, y_train, y_test):
-    
-
-    with open(model_dir + '.pkl', 'rb') as f:
-        model = pickle.load(f)
-
-    list_model = {}
-    list_model[model_name] = model
-    report, cm, models = \
-        fit_models(list_model, 
-        X_train, X_test,y_train, y_test,
-        save_model=False,
-        save_results=False)
-    
-
-    report[model_name] = report[model_name].apply(lambda x: round(x, ndigits=2))
-    report[model_name].loc["accuracy"] =[report[model_name].loc["accuracy","precision"],"","",""]
-    plt.figure(figsize=(16, 12))
-    # Graph des coeff de la LogisticRegression
-    if type(model).__name__ == 'LogisticRegression': 
-            serie_coef = pd.Series(model.coef_[0], 
-                    X_train.columns).sort_values(ascending=False)
-            index_toplot = list(np.arange(0, 10, 1))
-            for x in list(np.arange(-10, -1, 1)):
-                    index_toplot.append(x) 
-                    serie_coef.iloc[index_toplot].plot(kind='barh', figsize=(15,20));
-            plt.title("Coefficients " + graph_title)
-            
-
-
-    if (type(model).__name__ == 'RandomForestClassifier') or (type(model).__name__ == "BalancedRandomForestClassifier"):  
-            # features importances 
-            feat_importances = pd.Series(
-            model.feature_importances_, index=X_train.columns)
-            feat_importances.nlargest(20).plot(kind='barh');
-            plt.title("Features importance " + graph_title)
-
-    plt.subplots_adjust(left=0.2, bottom=0.4)
-    table_cm = plt.table(cellText=cm[model_name].values,
-            rowLabels=cm[model_name].index,
-            colLabels=cm[model_name].columns,
-            cellLoc = 'center', rowLoc = 'center',
-            transform=plt.gcf().transFigure,
-            bbox = ([0.1, 0.25, 0.3, 0.1]))
-    table_cm.auto_set_font_size(False)
-    table_cm.set_fontsize(10)
-            
-    table_report = plt.table(cellText=report[model_name].values,
-            rowLabels=report[model_name].index,
-            colLabels=report[model_name].columns,
-            cellLoc = 'center', rowLoc = 'center',
-            transform=plt.gcf().transFigure,
-            bbox = ([0.6, 0.25, 0.3, 0.1]))
-    table_report.auto_set_font_size(False)
-    table_report.set_fontsize(10)
-    
-    plt.savefig(graph_dir + ".png", bbox_inches="tight")
-
-
 
 def compare_model_results(modeling_batch, model_qual, model_list, 
                           location_list,metrics_list,class_label):
