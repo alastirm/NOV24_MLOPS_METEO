@@ -20,15 +20,14 @@ import shap
 
 # métriques 
 from imblearn.metrics import classification_report_imbalanced, geometric_mean_score
-from sklearn.metrics import classification_report,accuracy_score, f1_score, confusion_matrix
+from sklearn.metrics import classification_report,accuracy_score, f1_score, confusion_matrix, precision_score
 
 # Rééchantillonage
 from imblearn.over_sampling import SMOTE
+from imblearn.under_sampling import RandomUnderSampler
 
 # Autres fonctions
 import functions_created
-
-# Ce script balaye quelques méthodes de features selection sur un jeu de données nettoyé
 
 # Chargement données issues du preprocessing
 
@@ -47,13 +46,10 @@ X_train_save = X_train
 X_test_save = X_test
 
 # Choix de 3 modèles 
-dt = DecisionTreeClassifier(max_depth = 1)
-
-
-models_select = models = {
-    'LogisticRegression': LogisticRegression(max_iter = 500),
-    'RandomForestClassifier': RandomForestClassifier(),
-    'BaggingClassifier': BaggingClassifier(dt, n_estimators = 500, max_samples = 0.5, max_features = 0.5)
+models_select  = {
+    'LogisticRegression': LogisticRegression(max_iter = 500, n_jobs=-1),
+    'RandomForestClassifier': RandomForestClassifier(n_jobs=-1),
+    'BaggingClassifier': BaggingClassifier(n_estimators = 500, max_samples = 0.5, max_features = 0.5, n_jobs=-1)
 }
 
 
@@ -65,7 +61,7 @@ models_select = models = {
 
 model = LogisticRegression()
 
-def fit_models(models_select, X_train, y_train, X_test, y_test): 
+def fit_models(models_select, X_train, y_train, X_test, y_test, unbalanced = False): 
       results = {}
       cm = {}
       for model_name, model in models_select.items():
@@ -80,8 +76,11 @@ def fit_models(models_select, X_train, y_train, X_test, y_test):
             test_f1_score = f1_score(y_test, y_pred)
             # print(classification_report(y_test["RainTomorrow"], y_pred))
             report = classification_report(y_test["RainTomorrow"], y_pred, output_dict=True)
+            
+            if unbalanced == True :
+                 report = classification_report_imbalanced(y_test["RainTomorrow"], y_pred, output_dict=True)
+            
             report = pd.DataFrame(report).transpose()
-
             # Stocker les résultats
             results[model_name] = report
             cm[model_name] = confusion_matrix(y_test["RainTomorrow"], y_pred,)
@@ -137,7 +136,7 @@ for model_name, model in models_select.items():
 
 # Hyperparamètres à tester pour chaque modèle
 param_grids = {
-    'LogisticRegression': {'max_iter' : 500,
+    'LogisticRegression': {
                            'C': [0.01, 0.1, 1, 10], 
                            'solver': ['liblinear', 'lbfgs']},
     'RandomForestClassifier': {'n_estimators': [50, 100, 200], 
@@ -146,19 +145,42 @@ param_grids = {
                            'max_samples' : [0.05, 0.1, 0.2, 0.5]}
 }
 
+param_grids2 = {
+    'LogisticRegression': {
+        'max_iter' : [100,500],
+        'C':[0.001, 0.01, 0.1, 1, 10, 100],
+        'solver': ['newton-cholesky','newton-cg','lbfgs', 'liblinear', 'sag', 'saga'],
+        'penalty':['none', 'elasticnet', 'l1', 'l2'],
+        'fit_intercept': [True, False]},
+    'RandomForestClassifier': {
+        'n_estimators': [100, 200],
+        'criterion': ['gini', 'entropy', 'log_loss'], 
+        'max_depth': [10, 30, 50],
+        'max_features': ['sqrt', 'log2', None],
+        'min_samples_leaf': [1, 2, 4],
+        'min_samples_split': [2, 5, 10]},
+    'BaggingClassifier': {
+        'n_estimators': [50, 500, 1000, 2000], 
+        'max_samples' : [0.05, 0.1, 0.2, 0.5, 1],
+        'max_features': [0.5, 0.8, 0.95, 1.0],
+        'bootstrap': [True, False],
+        'bootstrap_features': [True, False],
+        'oob_score': [True, False]}
+}
 
-# Dictionnaire pour stocker les résultats
+
+# Dictionnaire pour stocker les résultats (njobs -1)
 results_search = {}
 
-def compare_search_methods(model_name, model, param_grid):
-    search_methods = {
-        'GridSearchCV': GridSearchCV(estimator=model, param_grid=param_grid, cv=5, scoring='accuracy'),
-        'RandomizedSearchCV': RandomizedSearchCV(estimator=model, param_distributions=param_grid, n_iter=5, cv=5, scoring='accuracy', random_state=42),
-        'BayesSearchCV': BayesSearchCV(estimator=model, search_spaces=param_grid, n_iter=5, cv=5, scoring='accuracy', random_state=42)
-    }
+def compare_search_methods(model_name, model, param_grid, X_train, y_train, X_test, y_test):
+    # search_methods = {
+    #     'GridSearchCV': GridSearchCV(estimator=model, param_grid=param_grid, cv=5, scoring='accuracy', n_jobs=-1),
+    #     'RandomizedSearchCV': RandomizedSearchCV(estimator=model, param_distributions=param_grid, n_iter=5, cv=5, scoring='accuracy', random_state=42, n_jobs=-1),
+    #     'BayesSearchCV': BayesSearchCV(estimator=model, search_spaces=param_grid, n_iter=5, cv=5, scoring='accuracy', random_state=42, n_jobs=-1)
+    # }
     
     search_methods = {
-        'GridSearchCV': GridSearchCV(estimator=model, param_grid=param_grid, cv=5, scoring='accuracy'),
+        'GridSearchCV': GridSearchCV(estimator=model, param_grid=param_grid, cv=5, scoring='precision'),
     }
 
     results_search[model_name] = {}
@@ -177,19 +199,21 @@ def compare_search_methods(model_name, model, param_grid):
         y_pred = search.predict(X_test)
         test_accuracy = accuracy_score(y_test, y_pred)
         test_f1_score = f1_score(y_test["RainTomorrow"], y_pred)
+        test_precision = precision_score(y_test["RainTomorrow"], y_pred)
 
         # Stocker les résultats
         results_search[model_name][search_name] = {
             'best_params': best_params,
             'best_cv_score': best_score,
             'test_accuracy': test_accuracy,
-            'test_f1_score': test_f1_score
+            'test_f1_score': test_f1_score,
+            'test_precision' : test_precision
         }
 
 
 # Exécuter la comparaison pour chaque modèle
-for model_name, model in models.items():
-    compare_search_methods(model_name, model, param_grids[model_name])
+for model_name, model in models_select.items():
+    compare_search_methods(model_name, model, param_grids[model_name],  X_train, y_train, X_test, y_test)
 
 # Afficher les résultats
 for model_name, model_results in results_search.items():
@@ -202,10 +226,11 @@ for model_name, model_results in results_search.items():
     print("\n")
 
 
-models_best = models = {
-    'LogisticRegression': LogisticRegression(max_iter = 500, C=1, solver = 'liblinear'),
-    'RandomForestClassifier': RandomForestClassifier(max_depth=30, n_estimators=200),
-    'BaggingClassifier': BaggingClassifier(n_estimators = 2000, max_samples = 0.2)
+
+models_best = {
+    'LogisticRegression': LogisticRegression(max_iter=100, C=0.01, solver='lbfgs', n_jobs=-1),
+    'RandomForestClassifier': RandomForestClassifier(max_depth=10, n_estimators=100, n_jobs=-1),
+    'BaggingClassifier': BaggingClassifier(n_estimators=500, max_samples=0.05, n_jobs=-1)
 }
 
 report_best, cm_best = fit_models(models_best, X_train, y_train, X_test, y_test)
@@ -219,7 +244,7 @@ for model_name, model in models_best.items():
       report_best[model_name].to_csv("../modeling_results/best_results" + model_name + ".csv", decimal =",")
 
 #######################################################
-# Gestion du déséquilibre et resampling (A discuter) ##
+# Gestion du déséquilibre et resampling  ##
 #######################################################
 
 # On utilise le rééchantillonnage pour traiter le déséquilibre de la variable cible -> SMOTE
@@ -230,50 +255,78 @@ smo = SMOTE()
 X_sm, y_sm = smo.fit_resample(X_train, y_train)
 print('Classes échantillon SMOTE :', dict(pd.Series(y_sm["RainTomorrow"]).value_counts()))
 
-report_sm, cm_sm = fit_models(models_select, X_sm, y_sm, X_test, y_test)
+
+# Gridsearch avec X_sm et y_sm
+for model_name, model in models_select.items():
+    compare_search_methods(model_name, model, param_grids2[model_name],  X_sm, y_sm, X_test, y_test)
+
+# Afficher les résultats
+for model_name, model_results in results_search.items():
+    print(f"Model: {model_name}")
+    for search_name, search_results in model_results.items():
+        print(f"  {search_name}:")
+        print(f"    Best Params: {search_results['best_params']}")
+        print(f"    Best CV Score: {search_results['best_cv_score']:2f}")
+        print(f"    Test Accuracy: {search_results['test_accuracy']:.2f}")
+    print("\n")
+
+
+models_best_sm =  {
+    'LogisticRegression': LogisticRegression(max_iter=100, C=10, solver='liblinear', n_jobs=-1),
+    'RandomForestClassifier': RandomForestClassifier(max_depth=30, n_estimators=100, n_jobs=-1),
+    'BaggingClassifier': BaggingClassifier(n_estimators=2000, max_samples=0.05, n_jobs=-1)
+}
+
+report_sm, cm_sm = fit_models(models_best_sm, X_sm, y_sm, X_test, y_test)
 
 # affiche et save les résultats
 for model_name, model in models_select.items():
       print(model_name)
-      print(report_base[model_name])
-      print(cm_base[model_name])
-      report_base[model_name] = report_base[model_name].apply(lambda x: round(x,ndigits=2))
-      report_base[model_name].to_csv("../modeling_results/smote_results" + model_name + ".csv", decimal =",")
+      print(report_sm[model_name])
+      print(cm_sm[model_name])
+      report_sm[model_name] = report_sm[model_name].apply(lambda x: round(x,ndigits=2))
+      report_sm[model_name].to_csv("../modeling_results/smote_results" + model_name + ".csv", decimal =",")
 
-# AJOUTER CLASSIFICATION REPORT IMBALANCED????
 
-##################
-# VRAC A TRIER
-##################
+# idem avec UnderSampler
+
+unsam = RandomUnderSampler()
+X_sm, y_sm = unsam.fit_resample(X_train, y_train)
+print('Classes échantillon SMOTE :', dict(pd.Series(y_sm["RainTomorrow"]).value_counts()))
+
+# Gridsearch avec X_sm et y_sm
+for model_name, model in models_select.items():
+    compare_search_methods(model_name, model, param_grids[model_name],  X_sm, y_sm, X_test, y_test)
+
+
+########################
+# MODELES PAR STATION
+########################
 
 # Teste un modèle sur une location
 
 location = "Sydney"
-X_train_loc = X_train.loc[location]
-y_train_loc = y_train.loc[location]
-X_test_loc = X_test.loc[location]
-y_test_loc = y_test.loc[location]
+report_loc = {}
+cm_loc = {}
 
-lr_loc = LogisticRegression(max_iter=1000)
-lr_loc.fit(X_train_loc, y_train_loc)
-y_pred_loc = lr.predict(X_test_loc)
-print(pd.crosstab(y_test_loc["RainTomorrow"], y_pred_loc))
-print(classification_report(y_test_loc["RainTomorrow"], y_pred_loc))
+report_loc[location], cm_loc[location] = fit_models(models_best, 
+                                                   X_train.loc[location], 
+                                                   y_train.loc[location], 
+                                                   X_test.loc[location], 
+                                                   y_test.loc[location])
+
+for model_name, model in models_select.items():
+      print(model_name)
+      print(report_loc[location][model_name])
+      print(cm_loc[location][model_name])
+      report_loc[location][model_name] = report_loc[location][model_name].apply(lambda x: round(x,ndigits=2))
+      report_loc[location][model_name].to_csv(
+           "../modeling_results/location/location_results_" + model_name + "_" + location + ".csv", decimal =",")
 
 
-print('Classes échantillon initial :',
-      dict(pd.Series(y_train_loc["RainTomorrow"]).value_counts()))
-
-smo = SMOTE()
-X_sm_loc, y_sm_loc = smo.fit_resample(X_train_loc, y_train_loc)
-print('Classes échantillon SMOTE :',
-      dict(pd.Series(y_sm_loc["RainTomorrow"]).value_counts()))
-
-lr_loc = LogisticRegression(max_iter=1000)
-lr_loc.fit(X_sm_loc, y_sm_loc)
-y_pred_loc = lr.predict(X_test_loc)
-print(pd.crosstab(y_test_loc["RainTomorrow"], y_pred_loc))
-print(classification_report_imbalanced(y_test_loc["RainTomorrow"], y_pred_loc))
+##################
+# VRAC A TRIER
+##################
 
 
 # Pour le fun, XGboost et valeurs de shapley
