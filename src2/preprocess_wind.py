@@ -2,7 +2,7 @@ import sys
 import time
 import threading
 import warnings
-import emoji
+# import emoji
 
 import pandas as pd
 import numpy as np
