@@ -222,13 +222,41 @@ lag_vars = ["MinTemp", "MaxTemp",
             'Rainfall']
 
 # variables pour lesquelles on calcule la variation entre 9am et 3pm
-diff_vars = ["WindSpeed","Humidity","Pressure","Temp","Cloud"]
+diff_vars = ["WindSpeed","Humidity","Pressure","Temp","Cloud", "MinTemp"]
 
 df_final = preprocess_lagvars.add_lagdelta_vars(df_final, 
                                                lag_vars, diff_vars)
 
 check_na = pd.DataFrame(df_final.isna().sum())
 df_final.describe()
+
+# Vérification de la multicolinéarité 
+
+vif = preprocess_lagvars.check_vif(df_final.dropna())
+
+# retrait des variables avec des VIF trop élevés
+
+remove_cols = ["TempMaxMin_delta",
+               'Season_cos',"Season_sin",
+               'sin_lat', 'cos_lat', 'sin_lon', 'cos_lon', 
+               "MinTemp_mean3j", "Temp9am_mean3j",
+               'WindGustSpeed_mean3j', 'Pressure9am_mean3j', 
+               'Humidity9am_mean3j']
+
+df_final = df_final.drop(columns = remove_cols)
+
+lag_vars=  ['WindGustSpeed', 'Humidity9am', 'Pressure9am', 'Temp9am',
+            'Rainfall', 'MaxTemp',"MinTemp"]
+
+
+for c in lag_vars:
+    df_final = df_final.drop(columns = c + "_lag1")
+    df_final = df_final.drop(columns = c + "_lag2")
+    df_final = df_final.drop(columns = c + "_lag3")
+
+vif_clean = preprocess_lagvars.check_vif(df_final.dropna())
+
+
 ########################################################################################################
 
 # Sauvegarde du dataset complet 

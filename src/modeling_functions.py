@@ -8,6 +8,9 @@ from lazypredict.Supervised import LazyClassifier
 from sklearn.utils import all_estimators
 from sklearn.base import ClassifierMixin
 
+# importing the variance_inflation_factor() function
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+
 # search hyperparameters
 from sklearn.model_selection import train_test_split, KFold, GridSearchCV, RandomizedSearchCV
 from skopt import BayesSearchCV
@@ -43,14 +46,14 @@ import os
 
 # fonction de séparation test / train selon deux méthodes 
 
-def separation_train_test(df, sep_method = "classique", col_target = "RainTomorrow"):
+def separation_train_test(df, sep_method = "classique", col_target = "RainTomorrow", split = 0.8):
     # drop les Nas restants 
     df = df.dropna()
     target = df[col_target]
     feats = df.drop(columns = col_target)
 
     if sep_method == "classique":
-        X_train, X_test, y_train, y_test = train_test_split(feats, target, test_size=0.3, random_state=1234, stratify=target)
+        X_train, X_test, y_train, y_test = train_test_split(feats, target, test_size=1-split, random_state=1234, stratify=target)
     if sep_method == "temporelle":
         df["Date"] = df.index.get_level_values(1).values
         years = pd.to_datetime(df.Date).dt.year
@@ -58,7 +61,7 @@ def separation_train_test(df, sep_method = "classique", col_target = "RainTomorr
         years.value_counts(ascending=True)
         Part_data_year = years.value_counts().sort_index().cumsum()/len(years)
         print("Part des données par années ", Part_data_year)
-        year_split = Part_data_year.loc[Part_data_year > 0.8].index[0]
+        year_split = Part_data_year.loc[Part_data_year > split].index[0]
         id_train = years[years < year_split].index
         id_test = years[years >= year_split].index
         print("Séparation des données avant et après ", year_split)
@@ -128,6 +131,18 @@ def lazy_results(X_train, X_test, y_train, y_test, removed_classifiers=removed_c
     display(models)
     return models, predictions
 
+# fonction pour regarder la VIF
+def check_vif(df_check):
+    cols = [cname for cname in df_check.columns if df_check[cname].dtype in ['int64', 'float64']]
+    df_check = df_check[cols]
+    df_vif  = pd.DataFrame()
+
+    df_vif['Feature'] = cols
+    df_vif['VIF'] = [variance_inflation_factor(df_check.values, i) for i in range(len(df_check.columns))] 
+
+    print("features avec une vif > 5 : ")
+    print(df_vif.loc[(df_vif["VIF"]>5) & (df_vif["VIF"].isin([np.inf, -np.inf]) == False)])
+    return df_vif
 
 # fonction pour fit une liste de modèle et sauvegarder les modèles 
 
@@ -223,7 +238,8 @@ def resample(X_train, y_train, resampler = SMOTE()):
 
 def plot_model_results(model_name, model_dir, graph_dir, 
                        graph_title,
-                       X_train, X_test, y_train, y_test):
+                       X_train, X_test, y_train, y_test,
+                       n_coef_graph=40):
     
 
     with open(model_dir + '.pkl', 'rb') as f:
@@ -245,8 +261,8 @@ def plot_model_results(model_name, model_dir, graph_dir,
     if type(model).__name__ == 'LogisticRegression': 
             serie_coef = pd.Series(model.coef_[0], 
                     X_train.columns).sort_values(ascending=False)
-            index_toplot = list(np.arange(0, 10, 1))
-            for x in list(np.arange(-10, -1, 1)):
+            index_toplot = list(np.arange(0, n_coef_graph/2, 1))
+            for x in list(np.arange(-n_coef_graph/2, -1, 1)):
                     index_toplot.append(x) 
                     serie_coef.iloc[index_toplot].plot(kind='barh', figsize=(15,20));
             plt.title("Coefficients " + graph_title)
@@ -257,7 +273,7 @@ def plot_model_results(model_name, model_dir, graph_dir,
             # features importances 
             feat_importances = pd.Series(
             model.feature_importances_, index=X_train.columns)
-            feat_importances.nlargest(20).plot(kind='barh');
+            feat_importances.nlargest(n_coef_graph).plot(kind='barh');
             plt.title("Features importance " + graph_title)
 
     plt.subplots_adjust(left=0.2, bottom=0.4)
@@ -341,6 +357,8 @@ def optimize_parameters(model_name, model,
         test_f1_score = f1_score(y_test, y_pred)
         test_precision = precision_score(y_test, y_pred)
         test_recall = recall_score(y_test, y_pred)
+        
+        
 
         # Stocker les résultats
         results_search[model_name][search_name] = {
@@ -356,8 +374,9 @@ def optimize_parameters(model_name, model,
 
 
 def modeling_global(model_name, model, dataset, modeling_batch, param_grids,
-                    grid_metrics, variable_cible, n_coef_graph,
-                    X_train_search, X_test_search, y_train_search,  y_test_search):
+                    grid_metrics, variable_cible, 
+                    X_train_search, X_test_search, y_train_search,  y_test_search,
+                    n_coef_graph = 40):
     
     for scoring_name, scoring in grid_metrics.items():
 
@@ -385,7 +404,7 @@ def modeling_global(model_name, model, dataset, modeling_batch, param_grids,
 
 
         # fit et sauvegarde (pickle, résultats) le meilleur modèle 
-        best_params_lr = results_search_lr["LogisticRegression"]["GridSearchCV"]["best_params"]
+        best_params_lr = results_search_lr[model_name]["GridSearchCV"]["best_params"]
         lr_best = search_lr.best_estimator_
 
         models_select_best = {(model_name + "_tuned"): lr_best}
@@ -456,10 +475,10 @@ def modeling_global(model_name, model, dataset, modeling_batch, param_grids,
 
 def modeling_location(select_location, 
                       df_location, 
-                      models_select, 
-                      param_grids, scoring = "accuracy",
+                      models_select,
+                      param_grids, scoring = "accuracy", scoring_name = "accuracy",
                       resampler = RandomUnderSampler(), 
-                      save_name="") :
+                      save_name="", n_coef_graph = 40) :
 
     X_train, X_test, y_train, y_test = \
         separation_train_test(df_location, 
@@ -471,7 +490,7 @@ def modeling_location(select_location,
 
     # lazy 
 
-    models_lazy, predictions_lazy = lazy_results(X_train_scaled, X_test_scaled, y_train, y_test)
+    # models_lazy, predictions_lazy = lazy_results(X_train_scaled, X_test_scaled, y_train, y_test)
 
     # fit modèles simples
 
@@ -520,17 +539,19 @@ def modeling_location(select_location,
 
         graph_title = "\n Location : " + select_location +\
         "\n Modèle : " + model_name +\
-        "\n scoring du gridsearch : " + scoring  
+        "\n scoring du gridsearch : " + scoring_name 
         
         plot_model_results(model_name, model_dir, graph_dir, 
                            graph_title,
-                           X_train_scaled, X_test_scaled, y_train, y_test)
+                           X_train_scaled, X_test_scaled, y_train, y_test, 
+                           n_coef_graph=n_coef_graph)
 
 
     return results_search, search
 
 def compare_model_results(modeling_batch, model_qual, model_list, 
-                          location_list,metrics_list,class_label):
+                          location_list,metrics_list,class_label,
+                          scoring, dataset):
     
     index_results = list(itertools.product(location_list, model_list))
     index_results = pd.MultiIndex.from_tuples(index_results , 
@@ -550,8 +571,9 @@ def compare_model_results(modeling_batch, model_qual, model_list,
                                     col_target = "RainTomorrow")
             X_train_scaled, X_test_scaled = scaling(X_train, X_test, scaler = MinMaxScaler())
             
-            model_dir =  "../saved_models/location/" + modeling_batch + \
-            select_location + "_" + model_qual + "_" + model_name
+            model_dir =  "../saved_models/location/" + dataset + "/" + modeling_batch + "/" + \
+                scoring + "_"+ select_location + "_" + model_qual + "_" + model_name
+
             
             with open(model_dir + '.pkl', 'rb') as f:
                 model = pickle.load(f)
