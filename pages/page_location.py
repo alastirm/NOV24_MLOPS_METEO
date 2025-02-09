@@ -64,7 +64,7 @@ with st.container(border = False):
         with dir2:
             winddir3pm = st.selectbox(label = '3:00 pm',
                                       options = sorted(df['WindDir3pm'].dropna().unique()),
-                                      help = 'Look at your compass at 9:00 am',
+                                      help = 'Look at your compass at 3:00 pm',
                                       placeholder = 'compass..',
                                       )
 
@@ -107,30 +107,154 @@ with st.container(border = False):
             Temp3pm =  st.number_input(label = '3:00 pm',
                             min_value = 0,
                             max_value = 50,
-                            help = 'Look at your thermometer at 3 in the morning',
+                            help = 'Look at your thermometer at 3 in the afternoon',
                             )
 
 with st.container(border = False):
 
     press, cloud = st.columns(2, border = True)
 
-    with press
+    with press:
+
+        st.write('Pressure at 9:00 am and 3:00 pm')
+
+        press9, press3 = st.columns(2, border = False)
+
+        with press9:
+
+            Pressure9am = st.number_input(label = 'at 9:00 am',
+                                min_value = 970,
+                                max_value = 1050,
+                                help = 'Look at your barometer at 9 in the morning',
+                                )
+
+        with press3:
+
+            Pressure3pm = st.number_input(label = 'at 3:00 pm',
+                                min_value = 970,
+                                max_value = 1050,
+                                help = 'Look at your barometer at 3 in the afternoon',
+                                )
+
+    with cloud:
+
+        st.write('Give the nebulosity ?')
+
+        cloud9, cloud3 = st.columns(2, border = False)
+
+        with cloud9:
+
+            Cloud9am = st.selectbox(label = '9:00 am',
+                            options = np.arange(0, 10, 1),
+                            help = 'Look at the sky',
+                            placeholder = '...',
+                            )
+
+        with cloud3:
+
+            Cloud3pm = st.selectbox(label = '3:00 pm',
+                            options = np.arange(0, 10, 1),
+                            help = 'Look at the sky',
+                            placeholder = '...',
+                            )
+
+with st.container(border = False):
+
+    hum, evap= st.columns(2, border = True)
+
+    with hum:
+
+        st.write('What is the humidity ?')
+
+
+        hum9, hum3 = st.columns(2, border = False)
+
+        with hum9:
+
+            Humidity9am = st.slider(
+                label = '9:00 am',
+                min_value = 0,
+                max_value = 100,
+                value = 58,
+                step = 1,
+                help = 'give the humidity at 9:00 am'
+            )
+
+        with hum3:
+
+            Humidity3pm = st.slider(
+                label = '3:00 pm',
+                min_value = 0,
+                max_value = 100,
+                value = 51,
+                step = 1,
+                help = 'give the humidity at 3:00 pm'
+            )
+
+    with evap:
+
+        st.write('Do you know the amount of evaporation ?')
+
+        Evaporation = st.slider(
+            label = 'in mm',
+            min_value = 0,
+            max_value = 21,
+            value = 5,
+            step = 1,
+            help = 'hard help yourself',
+        )
 
 
 
+with st.container(border = True):
 
+    sunsh, raintoday = st.columns(2, border = False)
+
+    with sunsh:
+
+        Sunshine = st.number_input(label = 'How many hours of sun today ?',
+                                    min_value = 0.0,
+                                    max_value = 14.5,
+                                    step = 0.25,
+                                    help = 'that is obsvious',
+                                )
+
+    with raintoday :
+
+        RainToday = st.checkbox(label = 'Does it rain today ?',
+                                value = False,
+        )
+
+    if RainToday:
+
+
+            Rainfall = st.number_input(label = 'How many minimeter of rain roday? ',
+                                    min_value = 0,
+                                    max_value = 371,
+                                    help = 'that is obsvious',
+                                )
 
 if st.button("Rain Tomorrow ?", type="primary"):
-    st.write('city :', city)
-    st.write('WindSpeed9am :', windspeed9am)
-    st.write('WindSpeed3pm :', windspeed3pm)
-    st.write('WindGustSpeed :', windgustspeed)
-    st.write('WindDir9am :', winddir9am)
-    st.write('WindDir3pm :', winddir3pm)
-    st.write('WindGustDir :', windgustdir)
-    st.write('MinTemp :', MinTemp)
-    st.write('MaxTemp :', MaxTemp)
-    st.write('Temp9am', Temp9am)
-    st.write('Temp3pm', Temp3pm)
 
-st.write(df.columns)
+
+
+
+
+
+
+
+        st.write('city :', city)
+        st.write('MinTemp :', MinTemp)
+        st.write('MaxTemp :', MaxTemp)
+        st.write('Rainfall', Rainfall)
+        st.write('Evaporation', Evaporation)
+        st.write('Sunshine', Sunshine)
+        st.write('WindSpeed9am :', windspeed9am)
+        st.write('WindSpeed3pm :', windspeed3pm)
+        st.write('WindGustSpeed :', windgustspeed)
+        st.write('WindDir9am :', winddir9am)
+        st.write('WindDir3pm :', winddir3pm)
+        st.write('WindGustDir :', windgustdir)
+
+        st.write('Temp9am', Temp9am)
+        st.write('Temp3pm', Temp3pm)
