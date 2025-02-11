@@ -25,6 +25,14 @@ class evaporation_transformer(BaseEstimator, TransformerMixin):
     def fit(self, X, y = None):
         # on récupère dans un dictionnaire la valeur de method pour la col_select dont on veut gérer les Nan, avec clé tuple(geo, col_target)
 
+        Q1 = X[self.col_select].quantile(0.25)
+        Q3 = X[self.col_select].quantile(0.75)
+        IQR = Q3 - Q1
+
+        seuil_sup = Q3 + 1.5 * IQR
+        seuil_inf = Q1 - 1.5 * IQR
+        X[self.col_select] = X[self.col_select].clip(lower=seuil_inf, upper=seuil_sup)
+
         X_drop = X.copy()
         X_drop = X_drop.dropna(subset = self.col_select)
         X_drop = pd.concat([X['Location'].value_counts(), X_drop['Location'].value_counts()], axis = 1)
@@ -40,6 +48,7 @@ class evaporation_transformer(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         # on cherche le tuple(geo, col_target) et on applique la valeur de la method si c'est un Nan
+
 
         X[self.col_select] = X.apply(
                 lambda row: self.dict_evap.get((row[self.geo], row[self.col_target]), row[self.col_select])
