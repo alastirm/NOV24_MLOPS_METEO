@@ -235,14 +235,6 @@ with st.container(border = True):
                                 )
 
 if st.button("Rain Tomorrow ?", type="primary"):
-
-
-
-
-
-
-
-
         st.write('city :', city)
         st.write('MinTemp :', MinTemp)
         st.write('MaxTemp :', MaxTemp)
