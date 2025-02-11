@@ -1,11 +1,16 @@
+import sys
+import os
+
 import streamlit as st
 import pandas as pd
 import numpy as np
 
-df = pd.read_csv('data/weatherAUS.csv')
+sys.path.insert(0, '/home/mathieu/code/MathieuAmacher/datascientest/NOV24-BDS-METEO/src2')
+import preprocess
 
-# with st.sidebar:
-    # st.title('MeteoStralia')
+
+
+df = pd.read_csv('data/weatherAUS.csv')
 
 
 with st.container(border = True):
@@ -21,6 +26,10 @@ with st.container(border = True):
 if city :
 
     df_city = df[df['Location'] == city]
+
+    preprocess.preprocessing(url_data = 'data/weatherAUS.csv', city = city)
+
+
 
     with st.container(border = False):
 
