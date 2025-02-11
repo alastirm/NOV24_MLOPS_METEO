@@ -92,7 +92,7 @@ def preprocessing(url_data : str = '../data/weatherAUS.csv', city : str = 'Sydne
     df.dropna(inplace = True)
     print('apres', df.info())
 
-    df.to_csv('../data_saved/data_mat2.csv')
+    # df.to_csv('../data_saved/data_mat2.csv')
     modelisation(df)
 
 
