@@ -17,24 +17,24 @@ from preprocess_cloud import cloud_transformer
 
 from modelisation import modelisation
 
-def preprocessing(url_data : str = '../data/weatherAUS.csv', city : str = 'Sydney'):
+def preprocessing( df, url_data : str = '../data/weatherAUS.csv', city : str = 'Sydney',):
 
     warnings.filterwarnings('ignore')
 
-    df = pd.read_csv(url_data)
+    # df = pd.read_csv(url_data)
 
-    print(df['Location'].unique(), end = '\n\n')
+    # print(df['Location'].unique(), end = '\n\n')
 
-    while True:
+    # while True:
 
-        city = input('Quelle ville choisissez vous ?\n ---->\n\n').capitalize()
+    #     city = input('Quelle ville choisissez vous ?\n ---->\n\n').capitalize()
 
-        if city in df['Location'].unique():
-            break  # La ville est valide, on sort de la boucle
-        else:
-            print(f"La ville '{city}' n'est pas dans la liste. \n\n Veuillez choisir une ville parmi celles disponibles.")
+    #     if city in df['Location'].unique():
+    #         break  # La ville est valide, on sort de la boucle
+    #     else:
+    #         print(f"La ville '{city}' n'est pas dans la liste. \n\n Veuillez choisir une ville parmi celles disponibles.")
 
-    df = df[df['Location'].isin([city])]
+    # df = df[df['Location'].isin([city])]
 
 
 
@@ -93,7 +93,8 @@ def preprocessing(url_data : str = '../data/weatherAUS.csv', city : str = 'Sydne
     print('apres', df.info())
 
     # df.to_csv('../data_saved/data_mat2.csv')
-    modelisation(df)
+
+    return df
 
 
 
@@ -103,5 +104,5 @@ def preprocessing(url_data : str = '../data/weatherAUS.csv', city : str = 'Sydne
 
 
 
-if __name__ == "__main__":
-    print(preprocessing())
+# if __name__ == "__main__":
+#     print(preprocessing())
