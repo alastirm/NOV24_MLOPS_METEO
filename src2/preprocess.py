@@ -15,24 +15,12 @@ from preprocess_evaporation import evaporation_transformer
 from preprocess_cloud import cloud_transformer
 
 
-from modelisation import modelisation
 
-def preprocessing( df, url_data : str = '../data/weatherAUS.csv', city : str = 'Sydney',):
+def preprocessing(df, url_data : str = 'data/weatherAUS.csv', city : str = 'Sydney'):
 
     warnings.filterwarnings('ignore')
 
     # df = pd.read_csv(url_data)
-
-    # print(df['Location'].unique(), end = '\n\n')
-
-    # while True:
-
-    #     city = input('Quelle ville choisissez vous ?\n ---->\n\n').capitalize()
-
-    #     if city in df['Location'].unique():
-    #         break  # La ville est valide, on sort de la boucle
-    #     else:
-    #         print(f"La ville '{city}' n'est pas dans la liste. \n\n Veuillez choisir une ville parmi celles disponibles.")
 
     # df = df[df['Location'].isin([city])]
 
@@ -76,13 +64,13 @@ def preprocessing( df, url_data : str = '../data/weatherAUS.csv', city : str = '
     if 'Rainfall' not in columns_to_drop:
         transformers.append(('rainfall_transformer', rainfall_raintoday_transformer(city=city)))
 
-    for humidity_col in ['Humidity9am', 'Humidity3pm']:
-        if humidity_col not in columns_to_drop:
-            transformers.append((f'{humidity_col.lower()}_imputer', VoisinageNAImputer(column=humidity_col)))
+    # for humidity_col in ['Humidity9am', 'Humidity3pm']:
+    #     if humidity_col not in columns_to_drop:
+    #         transformers.append((f'{humidity_col.lower()}_imputer', VoisinageNAImputer(column=humidity_col)))
 
-    for pressure_col in ['Pressure9am', 'Pressure3pm']:
-        if pressure_col not in columns_to_drop:
-            transformers.append((f'{pressure_col.lower()}_imputer', VoisinageNAImputer(column=pressure_col)))
+    # for pressure_col in ['Pressure9am', 'Pressure3pm']:
+    #     if pressure_col not in columns_to_drop:
+    #         transformers.append((f'{pressure_col.lower()}_imputer', VoisinageNAImputer(column=pressure_col)))
 
     df_transformed = Pipeline(transformers).fit_transform(df)
 
