@@ -124,3 +124,19 @@ class wind_dir_transformer(BaseEstimator, TransformerMixin):
 
 
         return X
+
+
+    def transform(self, X):
+        # choisit la valeur dans dict_wdt si col_select est Nan et en fonction de la valeur de col_target
+        # sinon conserve la valeur de col_select
+
+        X[self.col_select] = X.apply(
+            lambda row: self.dict_wdt.get(row[self.col_target])
+            if pd.isna(row[self.col_select]) else row[self.col_select],axis=1)
+
+        X[self.col_select + '_cos'] = X[self.col_select].apply(lambda x : self.cardinal_cos_sin[x][0])
+        X[self.col_select + '_sin'] = X[self.col_select].apply(lambda x : self.cardinal_cos_sin[x][1])
+
+
+
+        return X
