@@ -64,13 +64,13 @@ def preprocessing(df, url_data : str = 'data/weatherAUS.csv', city : str = 'Sydn
     if 'Rainfall' not in columns_to_drop:
         transformers.append(('rainfall_transformer', rainfall_raintoday_transformer(city=city)))
 
-    # for humidity_col in ['Humidity9am', 'Humidity3pm']:
-    #     if humidity_col not in columns_to_drop:
-    #         transformers.append((f'{humidity_col.lower()}_imputer', VoisinageNAImputer(column=humidity_col)))
+    for humidity_col in ['Humidity9am', 'Humidity3pm']:
+        if humidity_col not in columns_to_drop:
+            transformers.append((f'{humidity_col.lower()}_imputer', VoisinageNAImputer(column=humidity_col)))
 
-    # for pressure_col in ['Pressure9am', 'Pressure3pm']:
-    #     if pressure_col not in columns_to_drop:
-    #         transformers.append((f'{pressure_col.lower()}_imputer', VoisinageNAImputer(column=pressure_col)))
+    for pressure_col in ['Pressure9am', 'Pressure3pm']:
+        if pressure_col not in columns_to_drop:
+            transformers.append((f'{pressure_col.lower()}_imputer', VoisinageNAImputer(column=pressure_col)))
 
     df_transformed = Pipeline(transformers).fit_transform(df)
 
