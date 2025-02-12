@@ -5,31 +5,44 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
+import emoji
+
 sys.path.insert(0, '/home/mathieu/code/MathieuAmacher/datascientest/NOV24-BDS-METEO/src2')
-import preprocess
+# import preprocess
+from src2 import preprocessing, modelisation
+
+url = 'data/weatherAUS.csv'
+df = pd.read_csv(url)
+
+st.set_page_config(page_title = 'MeteoStralia',
+                   layout = 'wide',
+                   page_icon = emoji.emojize(':thumbs_up:'))
 
 
 
-df = pd.read_csv('data/weatherAUS.csv')
+with st.container(border = False):
 
+    location, time = st.columns(2, border = True)
 
-with st.container(border = True):
+    with location:
 
-    city = st.selectbox(label = 'Select a City',
-                    options = sorted(df['Location'].unique()),
-                    index = None,
-                    label_visibility="visible",
-                    help = 'get a listed city',
-                    placeholder = 'No city selected yet'
-                    )
+        city = st.selectbox(label = 'Select a City',
+                        options = sorted(df['Location'].unique()),
+                        index = None,
+                        label_visibility="visible",
+                        help = 'get a listed city',
+                        placeholder = 'No city selected yet'
+                        )
+
+    with time:
+
+        date = st.date_input(label = 'The date of today',
+                             help = 'year/month/day',
+                             value = 'today')
 
 if city :
 
     df_city = df[df['Location'] == city]
-
-    preprocess.preprocessing(url_data = 'data/weatherAUS.csv', city = city)
-
-
 
     with st.container(border = False):
 
@@ -60,7 +73,7 @@ if city :
                 windgustspeed = st.number_input(label = 'Gust',
                                 min_value = 0.0,
                                 max_value = 200.0,
-                                value = df_city['WindGustSpeed'].mode()[0].astype(float),
+                                value = 10.0,
                                 help = 'Look at your anemometer for the fastest wind speed of the day',
                                 )
 
@@ -85,7 +98,7 @@ if city :
 
             with dir3:
                 windgustdir = st.selectbox(label = 'Gust',
-                                        options = sorted(df['WindGustDir'].dropna().unique()),
+                                        options = 'W',
                                         help = 'Look at your when the gust blow',
                                         placeholder = 'compass..',
                                         )
@@ -245,21 +258,24 @@ if city :
                                     value = False,
             )
 
-        if RainToday:
-
+            if RainToday:
 
                 Rainfall = st.number_input(label = 'How many minimeter of rain roday? ',
                                         min_value = 0.0,
                                         max_value = 371.0,
-                                        value = df_city['Rainfall'].mean(),
+                                        value = np.round(df_city['Rainfall'].mean(), 2),
                                         help = 'that is obsvious',
                                     )
+            else :
+                Rainfall = 0
 
     if st.button("Rain Tomorrow ?", type="primary"):
+            st.write('Date : ', date),
             st.write('city :', city)
             st.write('MinTemp :', MinTemp)
             st.write('MaxTemp :', MaxTemp)
             st.write('Rainfall', Rainfall)
+            st.write('RainToday', RainToday)
             st.write('Evaporation', Evaporation)
             st.write('Sunshine', Sunshine)
             st.write('WindSpeed9am :', windspeed9am)
@@ -268,6 +284,5 @@ if city :
             st.write('WindDir9am :', winddir9am)
             st.write('WindDir3pm :', winddir3pm)
             st.write('WindGustDir :', windgustdir)
-
             st.write('Temp9am', Temp9am)
             st.write('Temp3pm', Temp3pm)
