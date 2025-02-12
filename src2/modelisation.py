@@ -44,10 +44,15 @@ def modelisation(df):
     y_pred = (y_pred_prob1 > optimal_threshold).astype(int)
 
 
-    print('score accuracy : ', model.score(X_test_scaled, y_test))
+    score_accuracy = model.score(X_test_scaled, y_test)
+
+    print('score accuracy : ', score_accuracy)
     print('f1 score : ', f1_score(y_test, y_pred))
     print('roc-auc score : ', roc_auc_score(y_test, y_pred))
     print('brier score : ', brier_score_loss(y_test, y_pred), '\n\n')
 
     print(confusion_matrix(y_test, y_pred), '\n\n')
     print(classification_report(y_test, y_pred))
+
+
+    return model
