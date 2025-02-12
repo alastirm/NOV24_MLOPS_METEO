@@ -232,11 +232,11 @@ df_final.describe()
 
 # Vérification de la multicolinéarité 
 
-vif = preprocess_lagvars.check_vif(df_final.dropna())
+#vif = preprocess_lagvars.check_vif(df_final.dropna())
 
 # retrait des variables avec des VIF trop élevés
 
-remove_cols = ["TempMaxMin_delta",
+remove_cols = ["TempMaxMin_delta","Evaporation", "Sunshine",
                'Season_cos',"Season_sin",
                'sin_lat', 'cos_lat', 'sin_lon', 'cos_lon', 
                "MinTemp_mean3j", "Temp9am_mean3j",
@@ -246,7 +246,7 @@ remove_cols = ["TempMaxMin_delta",
 df_final = df_final.drop(columns = remove_cols)
 
 lag_vars=  ['WindGustSpeed', 'Humidity9am', 'Pressure9am', 'Temp9am',
-            'Rainfall', 'MaxTemp',"MinTemp"]
+            'Rainfall', 'MaxTemp',"MinTemp", "Evaporation","Sunshine"]
 
 
 for c in lag_vars:
@@ -254,7 +254,7 @@ for c in lag_vars:
     df_final = df_final.drop(columns = c + "_lag2")
     df_final = df_final.drop(columns = c + "_lag3")
 
-vif_clean = preprocess_lagvars.check_vif(df_final.dropna())
+#vif_clean = preprocess_lagvars.check_vif(df_final.dropna())
 
 
 ########################################################################################################
@@ -302,8 +302,7 @@ def remove_columns_NAN(location_names, base_dir:Path, threshold:float=0.3):
             columns=["Location", 
                      'Climate_Desert', 'Climate_Grassland',
                      'Climate_Subtropical', 'Climate_Temperate', 
-                     'Climate_Tropical',
-                     'sin_lon','cos_lon', 'sin_lat','cos_lat'])
+                     'Climate_Tropical'])
 
         # Calcul du pourcentage de valeurs manquantes
         missing_percentages = df_location.isna().mean()
