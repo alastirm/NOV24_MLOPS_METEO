@@ -29,6 +29,9 @@ with st.container():
     st.subheader("Modélisations & Prédictions des variables météorologiques")
     st.markdown("<br>", unsafe_allow_html=True)
 
+    st.subheader("Sélectionner une station et une variable à étudier")
+    st.markdown("<br>", unsafe_allow_html=True)
+
     location, variable = st.columns(2)
 
     with location:
@@ -45,6 +48,7 @@ with st.container():
                                     help="Sélectionner une variable à analyser",
                                     placeholder="Aucune variable sélectionnée")
     st.markdown("<br>", unsafe_allow_html=True)
+
 
 if city and var_to_study:
 
