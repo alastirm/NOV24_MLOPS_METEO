@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 
+from pathlib import Path
+
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
@@ -13,13 +15,20 @@ class VoisinageNAImputer(BaseEstimator, TransformerMixin):
     et gère plusieurs localisations.
     '''
 
-    def __init__(self, column, global_data_path='../data/weatherAUS.csv'):
+    def __init__(self, column, global_data_path='data/weatherAUS.csv'):
         '''
         Initialisation avec un DataFrame global lu depuis un fichier CSV (par défaut).
         Le paramètre `column` spécifie la colonne à modifier.
         '''
         self.column = column
-        self.global_data_path = global_data_path
+        # Utilisation de pathlib pour obtenir un chemin absolu
+        self.global_data_path = Path(__file__).parent.parent / global_data_path
+
+        # Vérification de l'existence du fichier
+        if not self.global_data_path.exists():
+            raise FileNotFoundError(f"Le fichier {self.global_data_path} est introuvable.")
+
+        # Chargement du fichier CSV
         self.global_data = pd.read_csv(self.global_data_path)
 
     def fit(self, X, y=None):
