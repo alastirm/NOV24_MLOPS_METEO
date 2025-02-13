@@ -10,6 +10,9 @@ from sklearn.linear_model import LogisticRegression
 
 def modelisation(df):
 
+    df.dropna(inplace = True)
+
+
     X = df.drop(columns = 'RainTomorrow')
     y = df['RainTomorrow']
 
