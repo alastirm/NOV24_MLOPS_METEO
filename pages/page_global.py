@@ -168,7 +168,7 @@ if dataset_choice :
     if model_loaded:
         # prédictions
 
-        y_pred = model.predict(X_test[model._feature_names])
+        y_pred = model.predict(X_test)
         
 
         st.write("Choisissez les résultats à afficher")
