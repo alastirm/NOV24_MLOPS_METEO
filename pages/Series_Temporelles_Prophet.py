@@ -11,8 +11,7 @@ import plotly.express as px
 import statsmodels.api as sm
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-from statsmodels.tsa.stattools import acf, pacf
-from statsmodels.tsa.statespace.sarimax import SARIMAX
+from prophet import Prophet
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from io import BytesIO
 
@@ -26,7 +25,7 @@ st.set_page_config(page_title="MeteoStralia",
 
 with st.container():
 
-    st.subheader("Modélisations & Prédictions des variables météorologiques - avec SARIMA")
+    st.subheader("Modélisations & Prédictions des variables météorologiques - avec Prophet")
     st.markdown("<br>", unsafe_allow_html=True)
 
     st.subheader("Sélectionner une station et une variable à étudier")
@@ -105,17 +104,17 @@ if city and var_to_study:
     )
     st.plotly_chart(fig)
 
-    # Diviser les données en ensemble d'entraînement et de test
-    train = city_df[var_to_study][:int(0.8 * len(city_df))]
-    test = city_df[var_to_study][int(0.8 * len(city_df)):]
+    # Préparer les données pour Prophet
+    prophet_df = city_df[["id_Date", var_to_study]].rename(columns={"id_Date": "ds", var_to_study: "y"})
 
-    # Séparation des caractéristiques (features) dans `city_df` (pas `city_data` ici)
-    train_features = city_df.drop(columns=["id_Date", "id_Location", var_to_study]).iloc[:int(0.8 * len(city_df))]
-    test_features = city_df.drop(columns=["id_Date", "id_Location", var_to_study]).iloc[int(0.8 * len(city_df)):]
+    # Diviser les données en train et test
+    train = prophet_df[:int(0.8 * len(prophet_df))]
+    test = prophet_df[int(0.8 * len(prophet_df)):].copy()
+    test["ds"] = pd.to_datetime(test["ds"])
 
-    # Visualisation de l'ACF et PACF
+    # Création et ajustement du modèle Prophet
     st.markdown("<br>", unsafe_allow_html=True)
-    st.subheader("Autocorrélation et Autocorrélation Partielle")
+    st.subheader("Modèle Prophet")
     st.markdown("""
         <style>
         .custom-box {
@@ -128,72 +127,28 @@ if city and var_to_study:
         </style>
 
         <div class="custom-box">
-        Les graphiques d'autocorrélation et d'autocorrélation partielle permettent de comprendre les propriétés de la série temporelle 
-        et de déterminer les paramètres appropriés pour le modèle SARIMA :
-        </div>
-    """, unsafe_allow_html=True)
-    st.markdown("<br>", unsafe_allow_html=True)
-    lags = 50 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5), facecolor="none")
-    plot_acf(train, lags=lags, ax=ax1, color="lightskyblue")
-    plot_pacf(train, lags=lags, ax=ax2, color="lightskyblue")
-    ax1.set_title("ACF", fontsize=12, color="white")
-    ax2.set_title("PACF", fontsize=12, color="white")
-    ax1.set_facecolor("none")
-    ax2.set_facecolor("none")
-    for ax in [ax1, ax2]:
-        ax.spines["bottom"].set_color("white")
-        ax.spines["top"].set_color("white")
-        ax.spines["left"].set_color("white")
-        ax.spines["right"].set_color("white")
-        ax.tick_params(axis="x", colors="white")
-        ax.tick_params(axis="y", colors="white")
-    fig.patch.set_alpha(0)
-    st.pyplot(fig)
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # Création et ajustement du modèle SARIMA
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.subheader("Modèle SARIMA")
-    st.markdown("""
-        <style>
-        .custom-box {
-            background-color: #280137;
-            padding: 10px;
-            border-radius: 5px;
-            border: none;
-            font-family: monospace;
-        }
-        </style>
-
-        <div class="custom-box">
-        Modèle statistique utilisé pour analyser et prévoir les longues séries temporelles, tout en prenant en compte les variations saisonières :
+        Bibliothèque open-source développée par Meta, spécialement conçue pour la prévision des séries temporelles ayant des tendances non linéaires
+        et des effets saisonniers prononcés :
         </div>
     """, unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
     st.code(""" 
-            sarima_model = SARIMAX(train, 
-                                   exog = train_features,              # Inclure les variables exogènes qui peuvent influencer la variable cible
-                                   order = (1, 1, 1), 
-                                   seasonal_order = (1, 1, 1, 12),     # 12 pour une saisonnalité annuelle
-                                   enforce_stationarity = False,       # Accepter des séries non stationnaires
-                                   enforce_invertibility = False)
+            model = Prophet()
+            model.fit(train)
             """, language="python")
     st.markdown("<br>", unsafe_allow_html=True)
-    sarima_model = SARIMAX(train,
-                           exog=train_features,
-                           order=(1, 1, 1),
-                           seasonal_order=(1, 1, 1, 12),
-                           enforce_stationarity=False,
-                           enforce_invertibility=False)
-    sarima_results = sarima_model.fit(method="powell", disp=False)
-    st.write(sarima_results.summary())
+    model = Prophet()
+    model.fit(train)
 
-    # Prédictions du modèle SARIMA
-    predictions = sarima_results.predict(start=len(train),
-                                         end=len(train) + len(test) - 1,
-                                         exog=test_features,
-                                         dynamic=False)
+    # Prédictions du modèle Prophet
+    future = model.make_future_dataframe(periods=len(test), freq="D")
+    forecast = model.predict(future)
+    forecast["ds"] = pd.to_datetime(forecast["ds"])
+    forecast_test = forecast[forecast["ds"].isin(test["ds"])]  #
+    if len(forecast_test) != len(test):
+        print(f"Attention : longueur différente entre test ({len(test)}) et forecast_test ({len(forecast_test)})")
+        test = test[test["ds"].isin(forecast_test["ds"])]
+    predictions = forecast_test["yhat"].values    
 
     # Visualisation des prédictions
     st.markdown("<br>", unsafe_allow_html=True)
@@ -214,22 +169,45 @@ if city and var_to_study:
         </div>
     """, unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
-    fig, ax = plt.subplots(figsize=(15, 5), facecolor="none")
-    ax.plot(train.index, train, label="Train", color="darkgrey", linewidth=0.7)
-    ax.plot(test.index, test, label="Test", color="white", linewidth=0.7)
-    ax.plot(test.index, predictions, label="Predictions", color="red", linestyle="dotted", linewidth=0.7)
-    ax.set_xlabel("Date", color="white")
-    ax.set_ylabel(f"{var_to_study}", color="white")
-    ax.legend(labelcolor="white", frameon=False) 
-    ax.set_facecolor("none")
-    fig.patch.set_alpha(0) 
-    ax.spines["bottom"].set_color("white")
-    ax.spines["top"].set_color("white")
-    ax.spines["left"].set_color("white")
-    ax.spines["right"].set_color("white")
-    ax.tick_params(axis="x", colors="white")
-    ax.tick_params(axis="y", colors="white")
-    st.pyplot(fig)
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=forecast["ds"], 
+        y=forecast["yhat"], 
+        mode="lines", 
+        name="Prédiction", 
+        line=dict(color="red", width=2)
+    ))
+    fig.add_trace(go.Scatter(
+        x=forecast["ds"], 
+        y=forecast["yhat_upper"], 
+        mode="lines", 
+        name="Intervalle supérieur", 
+        line=dict(color="silver", dash="dot")
+    ))
+    fig.add_trace(go.Scatter(
+        x=forecast["ds"], 
+        y=forecast["yhat_lower"], 
+        mode="lines", 
+        name="Intervalle inférieur", 
+        line=dict(color="silver", dash="dot"),
+        fill="tonexty",
+        fillcolor="rgba(169,169,169,0.2)"
+    ))
+    fig.add_trace(go.Scatter(
+        x=test["ds"], 
+        y=test["y"], 
+        mode="markers", 
+        name="Données réelles", 
+        marker=dict(color="skyblue", size=4)
+    ))
+    fig.update_layout(
+        xaxis_title="Date",
+        yaxis_title=var_to_study,
+        template="plotly_white",
+        showlegend=True,
+        height=600
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
     # Évaluation du modèle
     st.markdown("<br>", unsafe_allow_html=True)
@@ -250,10 +228,10 @@ if city and var_to_study:
         </div>
     """, unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
-    r2 = round(r2_score(test, predictions), 3)
-    mse = round(mean_squared_error(test, predictions), 3)
+    r2 = round(r2_score(test["y"], predictions), 3)
+    mse = round(mean_squared_error(test["y"], predictions), 3)
     rmse = round(np.sqrt(mse), 3)
-    mae = round(mean_absolute_error(test, predictions), 3)
+    mae = round(mean_absolute_error(test["y"], predictions), 3)
     st.write(f"📈 R2 : {r2}")
     st.write(f"📊 MSE : {mse}")
     st.write(f"📊 RMSE : {rmse}")
