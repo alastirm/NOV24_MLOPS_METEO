@@ -15,6 +15,8 @@ from sklearn.svm import LinearSVC
 from imblearn.metrics import classification_report_imbalanced, geometric_mean_score
 from sklearn.metrics import classification_report,accuracy_score, f1_score, fbeta_score,  average_precision_score
 from sklearn.metrics import make_scorer, confusion_matrix, precision_score, recall_score, precision_recall_curve
+from sklearn.metrics import PrecisionRecallDisplay
+from sklearn.metrics import precision_recall_curve, roc_curve, roc_auc_score
 
 # scaling
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler
@@ -206,9 +208,24 @@ if dataset_choice :
 
         # proba
         # y_probs = model.predict_proba(X_test)
-        
 
-        
+        st.write("Choisissez un approfondissement")
+        seuil_col, location_col = st.columns(2, border = True)
+        with seuil_col: 
+            seuil_choice = st.checkbox("Seuil de classification")
+        with location_col: 
+            location_choice = st.checkbox("Qualité des prédictions par station")
+
+        if seuil_col:
+            seuil_plot, metric_plot = \
+                mf.st_plot_seuil_roc_AUC(
+                    model,
+                    X_train, X_test, y_train, y_test
+                            )
+            
+            st.pyplot(seuil_plot)
+            st.pyplot(metric_plot)
+
     else:
         print ("Impossible de charger ce modèle")
 
