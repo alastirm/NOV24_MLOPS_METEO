@@ -172,17 +172,18 @@ def fit_models(models_select,
         report = classification_report(y_test, y_pred, output_dict=True)
             
         if unbalanced:
-            report = classification_report_imbalanced(y_test, y_pred, output_dict=True)
+            report = classification_report_imbalanced(y_test, y_pred, 
+                                                      output_dict=True)
             
         report = pd.DataFrame(report).transpose()
+
         # Stocker les résultats
         results[model_name] = report
         cm[model_name] = confusion_matrix(y_test, y_pred)
-        cm[model_name] = pd.DataFrame(cm[model_name], index = y_train.unique(), 
-                                          columns=y_train.unique())    
+        cm[model_name] = pd.DataFrame(cm[model_name], 
+                                      index = y_train.unique(), 
+                                      columns=y_train.unique())    
             
-        
-
         fitted_models[model_name] = model
         
         # sauvegarde les modèles en pickle (si true)
@@ -236,10 +237,10 @@ def resample(X_train, y_train, resampler = SMOTE()):
 
 
 
-def plot_model_results(model_name, model_dir, graph_dir, 
-                       graph_title,
+def plot_model_results(model_name, model_dir, 
+                       graph_dir, graph_title, 
                        X_train, X_test, y_train, y_test,
-                       n_coef_graph=40):
+                       n_coef_graph=40, save_graph = True):
     
 
     with open(model_dir + '.pkl', 'rb') as f:
@@ -256,7 +257,8 @@ def plot_model_results(model_name, model_dir, graph_dir,
 
     report[model_name] = report[model_name].apply(lambda x: round(x, ndigits=2))
     report[model_name].loc["accuracy"] =[report[model_name].loc["accuracy","precision"],"","",""]
-    plt.figure(figsize=(16, 12))
+    
+    plot_res = plt.figure(figsize=(16, 12))
     # Graph des coeff de la LogisticRegression
     if type(model).__name__ == 'LogisticRegression': 
             serie_coef = pd.Series(model.coef_[0], 
@@ -267,8 +269,6 @@ def plot_model_results(model_name, model_dir, graph_dir,
                     serie_coef.iloc[index_toplot].plot(kind='barh', figsize=(15,20));
             plt.title("Coefficients " + graph_title)
             
-
-
     if (type(model).__name__ == 'RandomForestClassifier') or (type(model).__name__ == "BalancedRandomForestClassifier"):  
             # features importances 
             feat_importances = pd.Series(
@@ -295,9 +295,10 @@ def plot_model_results(model_name, model_dir, graph_dir,
     table_report.auto_set_font_size(False)
     table_report.set_fontsize(10)
     
-    plt.savefig(graph_dir + ".png", bbox_inches="tight")
+    if save_graph:
+        plt.savefig(graph_dir + ".png", bbox_inches="tight")
 
-
+    return plot_res
 
 # Fonction d'optimisation deshyperparamètres
 
@@ -593,3 +594,92 @@ def compare_model_results(modeling_batch, model_qual, model_list,
 
 
     return table_results
+
+
+
+### Fonctions adaptées streamlit #######
+
+
+def st_plot_model_results(
+          model_name, model, 
+          X_train, X_test, y_train, y_test,
+          n_coef_graph=40, 
+          plot_inter = True,
+          plot_cm = True,
+          plot_report = True, 
+          graph_title = ""):
+     
+    # prédictions
+    y_pred = model.predict(X_test)
+
+    # métriques
+    report = classification_report(y_test, y_pred, output_dict=True)
+    report = pd.DataFrame(report).transpose()
+    report = report.apply(lambda x: round(x, ndigits=2))
+    report.loc["accuracy"] =[report.loc["accuracy","precision"],"","",""]
+    
+    # matrice de confusion
+    cm= confusion_matrix(y_test, y_pred)
+    cm= pd.DataFrame(cm,  
+                     index = y_train.unique(), 
+                     columns=y_train.unique())
+    
+    
+  
+    if plot_inter:
+    # graphique interprétabilité
+        plot_res = plt.figure(figsize=(16, 12))
+        plt.subplots_adjust(left=0.2, bottom=0.4) 
+        # Graph des coeff de la LogisticRegression
+        if type(model).__name__ == 'LogisticRegression': 
+                serie_coef = pd.Series(model.coef_[0], 
+                        X_train.columns).sort_values(ascending=False)
+                index_toplot = list(np.arange(0, n_coef_graph/2, 1))
+                for x in list(np.arange(-n_coef_graph/2, -1, 1)):
+                        index_toplot.append(x) 
+                        serie_coef.iloc[index_toplot].plot(kind='barh', figsize=(15,20));
+                plt.title("Coefficients " + graph_title)
+                
+        if (type(model).__name__ == 'RandomForestClassifier') or \
+            (type(model).__name__ == "BalancedRandomForestClassifier") :  
+                # features importances 
+                feat_importances = pd.Series(
+                model.feature_importances_, index=X_train.columns)
+                feat_importances.nlargest(n_coef_graph).plot(kind='barh');
+                plt.title("Features importance " + graph_title)
+        
+        if (type(model).__name__ == "BaggingClassifier"):
+            feat_importances = np.mean(
+                 [tree.feature_importances_ for tree in model.estimators_],
+                   axis=0)
+            feat_importances = pd.Series(
+                 feat_importances, index=X_train.columns)
+            feat_importances.nlargest(n_coef_graph).plot(kind='barh');
+            plt.title("Features importance " + graph_title)
+
+    else:
+        plot_res = plt.figure(figsize=(16, 12))
+        plt.axis('off')
+        plt.subplots_adjust(left=0.5, bottom=0.5)
+
+    if plot_cm :
+        table_cm = plt.table(cellText=cm.values,
+                rowLabels=cm.index,
+                colLabels=cm.columns,
+                cellLoc = 'center', rowLoc = 'center',
+                transform=plt.gcf().transFigure,
+                bbox = ([0.1, 0.25, 0.3, 0.1]))
+        table_cm.auto_set_font_size(False)
+        table_cm.set_fontsize(10)
+
+    if plot_report:      
+        table_report = plt.table(cellText=report.values,
+                rowLabels=report.index,
+                colLabels=report.columns,
+                cellLoc = 'center', rowLoc = 'center',
+                transform=plt.gcf().transFigure,
+                bbox = ([0.6, 0.25, 0.3, 0.1]))
+        table_report.auto_set_font_size(False)
+        table_report.set_fontsize(10)
+
+    return report, cm, plot_res

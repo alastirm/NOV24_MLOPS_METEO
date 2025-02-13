@@ -239,7 +239,8 @@ df_final.describe()
 remove_cols = ["TempMaxMin_delta","Evaporation", "Sunshine",
                'Season_cos',"Season_sin",
                'sin_lat', 'cos_lat', 'sin_lon', 'cos_lon', 
-               "MinTemp_mean3j", "Temp9am_mean3j",
+               "MinTemp_mean3j", 
+               "Temp9am_mean3j",
                'WindGustSpeed_mean3j', 'Pressure9am_mean3j', 
                'Humidity9am_mean3j']
 
