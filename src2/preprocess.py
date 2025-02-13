@@ -77,7 +77,7 @@ def preprocessing(df, url_data : str = 'data/weatherAUS.csv', city : str = 'Sydn
     df = df.drop(columns = ['Location', 'WindGustDir', 'WindDir9am', 'WindDir3pm'] + columns_to_drop)
     df = df.set_index('Date')
 
-    df.dropna(inplace = True)
+    # df.dropna(inplace = True)
     print('apres', df.info())
 
     # df.to_csv('../data_saved/data_mat2.csv')
