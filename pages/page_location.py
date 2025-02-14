@@ -24,7 +24,7 @@ st.set_page_config(page_title = 'MeteoStralia',
                    layout = 'wide',
                    page_icon = emoji.emojize('🦘'))
 
-
+st.write('Here you can fin tune forecast')
 
 with st.container(border = False):
 
@@ -477,61 +477,104 @@ if city :
 
             with predict:
 
-                st.write(model.predict(cible_scaled))
-                st.write(model.predict_proba(cible_scaled))
+                image, result, confidence = st.columns(3, border = True)
 
-            with seuil:
+                with result:
+                    prediction = model.predict(cible_scaled)
 
-                Threshold = st.slider(
-                    label = 'Probability decision',
-                    min_value = 0.0,
-                    max_value = 1.0,
-                    value = threshold,
-                    step = 100.0,
-                    help = 'you can change the threshold, depending on your needs.',
-                )
+                    st.write('Sky like :')
 
-        with st.container(border = False):
+                    if prediction[0] == 0.0 :
+                        st.write('No Rain Tomorrow')
+                    else:
+                        st.write('Rain Tomorrow')
 
-            classif, graph = st.columns(2, border = True)
+                with image:
 
-            with classif:
-
-                st.table(classification_report(y_test, y_pred, output_dict = True))
-
-            with graph:
-
-                with st.spinner('Calcul des métriques...'):
-
-                    f1_1 = []
-                    roc_1 = []
-                    precision1 = []
-                    recall1 = []
-                    accuracy = []
-
-                    for i in np.linspace(0, 1, 1000):
-                        seuil = i
-                        y_pred = (y_pred_prob1 > i).astype("int32")
-                        accuracy.append(accuracy_score(y_test, y_pred))
-                        f1_1.append(f1_score(y_test, y_pred))
-                        roc_1.append(roc_auc_score(y_test, y_pred))
-                        precision1.append(precision_score(y_test, y_pred))
-                        recall1.append(recall_score(y_test, y_pred))
-
-                    plt.figure(figsize = (20, 5))
-
-                    plt.subplot(121)
-                    plt.plot(accuracy, label = 'accuracy')
-                    plt.plot(f1_1, label = 'f1')
-                    plt.plot(roc_1, label = 'roc-auc')
-                    plt.plot(precision1, label = 'precision')
-                    plt.plot(recall1, label = 'recall')
-                    plt.title(f'Evolution des metriques en fonction du seuil pour {city}')
-                    plt.legend()
-
-                    st.pyplot(plt)
+                    proba = model.predict_proba(cible_scaled)
 
 
 
+                    if proba[0][1] > threshold + threshold/3:
+                        st.image('image/niv5.png')
+                        st.write('big rain')
+                    elif proba[0][1] >= threshold:
+                        st.image('image/niv4.png')
+                        st.write('rain')
+                    elif proba[0][1] > threshold/2:
+                        st.image('image/niv3.png')
+                        st.write('cloudy')
+                    elif proba[0][1] > threshold/3:
+                        st.image('image/niv2.png')
+                        st.write('little cloudy')
+                    else :
+                        st.image('image/niv1.png')
+                        st.write('plain sun')
 
-        st.write('ok')
+                with confidence:
+                    acc = np.round(accuracy_score(y_test, y_pred), 2)
+
+                    st.write('Confidence Rate :')
+                    st.write(acc)
+
+
+
+            # with seuil:
+            #     st.write(proba)
+
+
+                # Threshold = st.slider(
+                #     label = 'Probability decision',
+                #     min_value = 0.0,
+                #     max_value = 1.0,
+                #     value = threshold,
+                #     step = 100.0,
+                #     help = 'you can change the threshold, depending on your needs.',
+                # )
+
+            if st.button('More statistiques ?', type = 'secondary'):
+
+                with st.container(border = False):
+
+                    classif, graph = st.columns(2, border = True)
+
+                    with classif:
+
+                        st.table(classification_report(y_test, y_pred, output_dict = True))
+
+                    with graph:
+
+                        with st.spinner('Calcul des métriques...'):
+
+                            f1_1 = []
+                            roc_1 = []
+                            precision1 = []
+                            recall1 = []
+                            accuracy = []
+
+                            for i in np.linspace(0, 1, 999):
+                                seuil = i
+                                y_pred = (y_pred_prob1 > i).astype("int32")
+                                accuracy.append(accuracy_score(y_test, y_pred))
+                                f1_1.append(f1_score(y_test, y_pred))
+                                roc_1.append(roc_auc_score(y_test, y_pred))
+                                precision1.append(precision_score(y_test, y_pred))
+                                recall1.append(recall_score(y_test, y_pred))
+
+                            plt.figure(figsize = (20, 5))
+
+                            plt.subplot(121)
+                            plt.plot(accuracy, label = 'accuracy')
+                            plt.plot(f1_1, label = 'f1')
+                            plt.plot(roc_1, label = 'roc-auc')
+                            plt.plot(precision1, label = 'precision')
+                            plt.plot(recall1, label = 'recall')
+                            plt.title(f'Evolution des metriques en fonction du seuil pour {city}')
+                            plt.legend()
+
+                            st.pyplot(plt)
+
+
+
+
+            st.write('ok')
