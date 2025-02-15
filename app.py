@@ -4,17 +4,24 @@ import emoji
 
 
 
-
 st.set_page_config(page_title = 'MeteoStralia',
                    layout = 'wide',
                    page_icon = emoji.emojize('🦘'))
 
 
+st.markdown("""
+    <style>
+    .css-1d391kg {display: none;}
+    </style>
+    """, unsafe_allow_html=True)
+
 # css container
 st.markdown("""
     <style>
-    .container-margin {
-        margin-top: 10px;
+    .container {
+        display : flex;
+        align-items : top;
+        margin-bottom: -50px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -36,21 +43,93 @@ st.markdown("""
         display: flex;
         justify-content: center;
         align-items: center;
-        height : 5vh;
-    }
+        height : auto;
+        }
     </style>
 """, unsafe_allow_html=True)
 
 
-with st.sidebar:
-    st.title('MeteoStralia')
+#########################################
+# header
 
-st.html("""
-    <div class="header" style = 'margin-top : -180px; margin-bottom : 50px'>
-        <h1 style = "color : rgb(16, 0, 97); font-size : 550%; height : 50px;">MeteoStralia </h1>
-        <h4 style = 'color : rgb(156, 4, 4); margin-left : 50px'>Data Scientist Weather Forecast Australia </h4>
-    </div>
-""")
+with st.container(border = False):
+
+    title, image = st.columns([2, 1], border = False)
+
+    with title:
+        st.html("""
+            <div class="header" style = 'margin-top : -50px; justify-items : center; align-items : top; margin-bottom : 50px'>
+                <h1 style = "color : rgb(16, 0, 97); font-size : 550%; height : 50px;">MeteoStralia </h1>
+                <h4 style = 'color : rgb(156, 4, 4);'>Data Scientist Weather Forecast Australia </h4>
+                <h6 style = 'display : flex; color : rgb(16, 0, 97); justify-items : center'>We have developed an innovative and powerful application designed to predict rainfall across Australia</h6>
+            </div>
+        """)
+
+    with image:
+
+        st.markdown('<div class = "image">', unsafe_allow_html = True)
+        st.image('image/australia.jpg', use_container_width = True)
+        st.markdown('</div>', unsafe_allow_html = True)
+
+
+
+#########################################################
+#button page
+
+with st.container(border = False):
+
+    st.markdown("""
+        <style>
+        .container-flex {
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            width: 100%;
+        }
+
+
+        .page_link {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            color : rgb(156, 4, 4);
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<div class="container-flex">', unsafe_allow_html=True)
+
+
+    glob, loc, pro, sar = st.columns(4, border = True)
+
+    with glob:
+        st.markdown('<div class = "page_link">', unsafe_allow_html = True)
+        st.page_link('./pages/page_comp_global.py', label = 'Global Prediction', icon=None, help=None, disabled=False, use_container_width=None)
+        st.markdown('</div>', unsafe_allow_html = True)
+
+    with loc:
+        st.markdown('<div class = "page_link">', unsafe_allow_html = True)
+        st.page_link('./pages/page_location.py', label = 'Local Prediction', icon=None, help=None, disabled=False, use_container_width=None)
+        st.markdown('</div>', unsafe_allow_html = True)
+
+
+    with pro:
+        st.markdown('<div class = "page_link">', unsafe_allow_html = True)
+        st.page_link('./pages/Series_Temporelles_Prophet.py', label = 'Prophet Prediction', icon=None, help=None, disabled=False, use_container_width=None)
+        st.markdown('</div>', unsafe_allow_html = True)
+
+    with sar:
+        st.markdown('<div class = "page_link">', unsafe_allow_html = True)
+        st.page_link('./pages/Series_Temporelles_SARIMA.py', label = 'Sarima Prediction', icon=None, help=None, disabled=False, use_container_width=None)
+        st.markdown('</div>', unsafe_allow_html = True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
+###########################################################
+#speeech
+
 
 with st.container(border = False):
 
@@ -67,12 +146,12 @@ with st.container(border = False):
 
     with image:
         st.markdown('<div class = "image">', unsafe_allow_html = True)
-        st.image('image/australia.jpg', use_container_width = True)
+        st.image('image/sydney.jpg', use_container_width = True)
         st.markdown('</div>', unsafe_allow_html = True)
 
 with st.container(border = False):
 
-    st.markdown('<div class="container-margin"></div>', unsafe_allow_html = True)
+    st.markdown('<div class="container-1"></div>', unsafe_allow_html = True)
 
     image2, content2 = st.columns([1, 2], border = False)
 
@@ -109,6 +188,6 @@ with st.container(border = False):
         st.image('image/orage.jpg')
 
 
-# """)
+
 
 # st.image('image/kangourou.png', caption='Kangourou Uluru', use_column_width=True)
