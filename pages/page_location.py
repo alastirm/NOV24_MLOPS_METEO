@@ -450,26 +450,18 @@ if city :
 
         y_pred_prob1 = model.predict_proba(X_test_scaled)[:, 1]
 
-        if y_train.value_counts(normalize = True)[1] < 0.15:
-                threshold = 0.165
-        if y_train.value_counts(normalize = True)[1] > 0.30:
-            threshold = 0.85
-        else:
-            precision, recall, thresholds = precision_recall_curve(y_test, y_pred_prob1)
-            diff = abs(precision - recall)
-            threshold = thresholds[diff.argmin()]
+        # if y_train.value_counts(normalize = True)[1] < 0.15:
+        #         threshold = 0.165
+        # if y_train.value_counts(normalize = True)[1] > 0.30:
+        #     threshold = 0.85
+        # else:
+        precision, recall, thresholds = precision_recall_curve(y_test, y_pred_prob1)
+        diff = abs(precision - recall)
+        threshold = thresholds[diff.argmin()]
 
         y_pred = (y_pred_prob1 > threshold).astype(int)
 
 
-        # score_accuracy = model.score(X_test_scaled, y_test)
-
-        # print('score accuracy : ', score_accuracy)
-        # print('f1 score : ', f1_score(y_test, y_pred))
-        # print('roc-auc score : ', roc_auc_score(y_test, y_pred))
-        # print('brier score : ', brier_score_loss(y_test, y_pred), '\n\n')
-
-        # st.write(confusion_matrix(y_test, y_pred), '\n\n')
 
         with st.container(border = False):
 
@@ -477,7 +469,7 @@ if city :
 
             with predict:
 
-                image, result, confidence = st.columns(3, border = True)
+                image, result, confidence = st.columns(3, border = False)
 
                 with result:
                     prediction = model.predict(cible_scaled)
@@ -512,16 +504,25 @@ if city :
                         st.write('plain sun')
 
                 with confidence:
-                    acc = np.round(accuracy_score(y_test, y_pred), 2)
-
-                    st.write('Confidence Rate :')
-                    st.write(acc)
+                    acc = accuracy_score(y_test, y_pred)
+                    st.write('Confidence Rate :', round((acc), 2)*100, '%')
 
 
+            with seuil:
 
-            # with seuil:
-            #     st.write(proba)
+                fig, ax = plt.subplots(figsize=(8, 1))
+                ax.plot([0, proba[0][0]], [0.2, 0.2], color = 'blue', linewidth = 20)
+                ax.plot([proba[0][0], 1], [0.2, 0.2], color = 'red', linewidth = 20)
+                ax.plot([1 - threshold, 1 - threshold],[0.15, 0.25], color = 'orange', linewidth = 5)
 
+                # ax.axis('off')
+                # ax.set_xticks([])
+                ax.set_yticks([])
+                st.pyplot(fig)
+
+                st.write('Probability No Rain :', round(proba[0][0]*100, 2), '%')
+                st.write('Probability Rain :', round(proba[0][1]*100, 2), '%')
+                st.write('Threshold', round((1-threshold)*100, 2), '%')
 
                 # Threshold = st.slider(
                 #     label = 'Probability decision',
@@ -532,49 +533,48 @@ if city :
                 #     help = 'you can change the threshold, depending on your needs.',
                 # )
 
-            if st.button('More statistiques ?', type = 'secondary'):
 
-                with st.container(border = False):
+            with st.container(border = False):
 
-                    classif, graph = st.columns(2, border = True)
+                classif, graph = st.columns(2, border = True)
 
-                    with classif:
+                with classif:
 
-                        st.table(classification_report(y_test, y_pred, output_dict = True))
+                    st.table(classification_report(y_test, y_pred, output_dict = True))
 
-                    with graph:
+                with graph:
 
-                        with st.spinner('Calcul des métriques...'):
+                    with st.spinner('Calcul des métriques...'):
 
-                            f1_1 = []
-                            roc_1 = []
-                            precision1 = []
-                            recall1 = []
-                            accuracy = []
+                        f1_1 = []
+                        roc_1 = []
+                        precision1 = []
+                        recall1 = []
+                        accuracy = []
 
-                            for i in np.linspace(0, 1, 999):
-                                seuil = i
-                                y_pred = (y_pred_prob1 > i).astype("int32")
-                                accuracy.append(accuracy_score(y_test, y_pred))
-                                f1_1.append(f1_score(y_test, y_pred))
-                                roc_1.append(roc_auc_score(y_test, y_pred))
-                                precision1.append(precision_score(y_test, y_pred))
-                                recall1.append(recall_score(y_test, y_pred))
+                        for i in np.linspace(0, 1, 999):
+                            seuil = i
+                            y_pred = (y_pred_prob1 > i).astype("int32")
+                            accuracy.append(accuracy_score(y_test, y_pred))
+                            f1_1.append(f1_score(y_test, y_pred))
+                            roc_1.append(roc_auc_score(y_test, y_pred))
+                            precision1.append(precision_score(y_test, y_pred))
+                            recall1.append(recall_score(y_test, y_pred))
 
-                            plt.figure(figsize = (20, 5))
+                        plt.figure(figsize = (20, 5))
 
-                            plt.subplot(121)
-                            plt.plot(accuracy, label = 'accuracy')
-                            plt.plot(f1_1, label = 'f1')
-                            plt.plot(roc_1, label = 'roc-auc')
-                            plt.plot(precision1, label = 'precision')
-                            plt.plot(recall1, label = 'recall')
-                            plt.title(f'Evolution des metriques en fonction du seuil pour {city}')
-                            plt.legend()
+                        plt.subplot(121)
+                        plt.plot(accuracy, label = 'accuracy')
+                        plt.plot(f1_1, label = 'f1')
+                        plt.plot(roc_1, label = 'roc-auc')
+                        plt.plot(precision1, label = 'precision')
+                        plt.plot(recall1, label = 'recall')
+                        plt.title(f'Evolution des metriques en fonction du seuil pour {city}')
+                        plt.legend()
 
-                            st.pyplot(plt)
-
+                        st.pyplot(plt)
 
 
 
-            st.write('ok')
+
+        st.write('ok')
