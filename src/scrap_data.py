@@ -2,10 +2,56 @@ import requests
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
+import os
+from pathlib import Path
 
-# #r = requests.get("https://reg.bom.gov.au/climate/dwo/IDCJDW2801.latest.shtml")
-# print(r)
-# print(r.content)
+station_ID = pd.read_csv("../data/station_ID.csv", sep=",")
+# drop les stations sans ID
+station_ID = station_ID.dropna(subset = ["IDCJDW"])
+
+# drop les nouvelles stations pour le moment
+station_ID = station_ID.dropna(subset = ["Location"])
+
+station_ID["IDCJDW"] = station_ID["IDCJDW"].astype(int).astype(str)
+station_ID.head()
+
+## time list 
+
+year_list = ["2024","2025"]
+month_list = ["01","02","03","04","05","06","07","08","09","10","11","12"]
+
+year = "2025"
+month = "01"
+
+
+for year in year_list :
+    for month in month_list :
+        for location in station_ID.Location2:
+            print(location)
+            id_location = station_ID.loc[(station_ID.Location2 == location) & 
+                        (station_ID.Location == location),"IDCJDW"]
+
+            skiprows = station_ID.loc[(station_ID.Location2 == location) & 
+                        (station_ID.Location == location),"skiprows"].values[0].astype(int)
+
+            if not(Path("../data/scrapcsv/" + location + "_" + year + month + ".csv").exists()):
+
+                r = requests.get(url_csv)
+                if r.ok:
+
+                    url_csv = "https://reg.bom.gov.au/climate/dwo/" + \
+                        year + month + "/text/IDCJDW" + str(id_location.iloc[0]) + "." + \
+                            year + month + ".csv"
+
+                    datatmp = pd.read_csv(url_csv, 
+                                    skiprows= skiprows , 
+                                    index_col=1,
+                                    encoding = "ISO-8859-1")
+                    
+                    datatmp.to_csv("../data/scrapcsv/" + location + "_" + year + month + ".csv")
+
+
+
 
 # soup = BeautifulSoup(r.content, 'html.parser')
 # print(soup.prettify())
@@ -25,9 +71,9 @@ from bs4 import BeautifulSoup
 
 # table_test["Date"]
 
-tables = pd.read_csv("https://reg.bom.gov.au/climate/dwo/202502/text/IDCJDW2801.202502.csv",
-                     skiprows=7, index_col=1,
-                     encoding = "ISO-8859-1")
+# tables = pd.read_csv("https://reg.bom.gov.au/climate/dwo/202502/text/IDCJDW2801.202502.csv",
+#                      skiprows=7, index_col=1,
+#                      encoding = "ISO-8859-1")
 
-tables.head()
-tables.tail()
+# tables.head()
+# tables.tail()
