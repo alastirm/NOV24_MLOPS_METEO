@@ -30,30 +30,89 @@ for year in year_list :
             print(location)
             id_location = station_ID.loc[(station_ID.Location2 == location) & 
                         (station_ID.Location == location),"IDCJDW"]
-
-            skiprows = station_ID.loc[(station_ID.Location2 == location) & 
-                        (station_ID.Location == location),"skiprows"].values[0].astype(int)
-
+            
             if not(Path("../data/scrapcsv/" + location + "_" + year + month + ".csv").exists()):
 
-                r = requests.get(url_csv)
-                if r.ok:
 
-                    url_csv = "https://reg.bom.gov.au/climate/dwo/" + \
+                url_csv = "https://reg.bom.gov.au/climate/dwo/" + \
                         year + month + "/text/IDCJDW" + str(id_location.iloc[0]) + "." + \
                             year + month + ".csv"
+                
+                response = requests.get(url_csv)
 
-                    datatmp = pd.read_csv(url_csv, 
-                                    skiprows= skiprows , 
-                                    index_col=1,
-                                    encoding = "ISO-8859-1")
-                    
-                    datatmp.to_csv("../data/scrapcsv/" + location + "_" + year + month + ".csv")
+                if response.ok:
+                    #print("url ok")
+                    soup = BeautifulSoup(response.content, "html.parser")
+                    lines = soup.prettify().split('\n')
+
+                    for line in range(len(lines)) :
+                        if lines[line][2:6] == "Date":
+                            skiprows = line-1
+                            print(skiprows)  
+                            break
+                         
+                    datatmp = pd.read_csv(url_csv,
+                                          skiprows= skiprows , 
+                                          index_col=0,
+                                          encoding = "ISO-8859-1")
+
+                    if datatmp.columns[0] == "Date":
+                        print("Date repérée -> enregistrement du csv ", location, "_",year+month)
+                        datatmp.to_csv("../data/scrapcsv/" + location + "_" + year + month + ".csv")
 
 
+# location = "BadgerysCreek"
+# year = "2025"
+# month = "01"
 
+# print(location)
+# id_location = station_ID.loc[(station_ID.Location2 == location) & 
+#                              (station_ID.Location == location),"IDCJDW"]
+
+# skiprows = station_ID.loc[(station_ID.Location2 == location) & 
+#             (station_ID.Location == location),"skiprows"].values[0].astype(int)
+
+# if not(Path("../data/scrapcsv/" + location + "_" + year + month + ".csv").exists()):
+
+#     r = requests.get(url_csv)
+#     if r.ok:
+
+#         url_csv = "https://reg.bom.gov.au/climate/dwo/" + \
+#             year + month + "/text/IDCJDW" + str(id_location.iloc[0]) + "." + \
+#                 year + month + ".csv"
+
+#         datatmp = pd.read_csv(url_csv, 
+#                         skiprows= skiprows , 
+#                         index_col=1,
+#                         encoding = "ISO-8859-1")
+        
+#         datatmp.to_csv("../data/scrapcsv/" + location + "_" + year + month + ".csv")
+
+
+# import urllib2  # the lib that handles the url stuff
+
+# data = urllib2.urlopen(url_csv) # it's a file like object and works just like a file
+# for line in data: # files are iterable
+#     print(line)
+# test sur les archives
+
+# 2017 - 2020
+y
+
+# https://webarchive.nla.gov.au/awa/20170823140252/http://pandora.nla.gov.au/pan/44065/20170824-0001/www.bom.gov.au/climate/dwo/201707/html/IDCJDW2801.201707.shtml
+# https://webarchive.nla.gov.au/awa/20180823140000/http://pandora.nla.gov.au/pan/44065/20180824-0000/www.bom.gov.au/climate/dwo/index.html
+# https://webarchive.nla.gov.au/awa/20190823140000/http://pandora.nla.gov.au/pan/44065/20190824-0000/www.bom.gov.au/climate/dwo/index.html
+# https://webarchive.nla.gov.au/awa/20200823140000/http://pandora.nla.gov.au/pan/44065/20200824-0000/www.bom.gov.au/climate/dwo/index.html
+# https://web.archive.org.au/awa/20170823180131mp_/http://pandora.nla.gov.au/pan/44065/20170824-0001/www.bom.gov.au/climate/dwo/IDCJDW2801.latest.shtml
+
+# https://web.archive.org.au/awa/20171408230237mp_/http://pandora.nla.gov.au/pan/44065/20170824-0001/www.bom.gov.au/climate/dwo/201707/html/IDCJDW2801.201707.shtml
+# https://web.archive.org.au/awa/20170823140237mp_/http://pandora.nla.gov.au/pan/44065/20170824-0001/www.bom.gov.au/climate/dwo/201708/html/IDCJDW2801.201708.shtml
+# https://web.archive.org.au/awa/20170823140237mp_/http://pandora.nla.gov.au/pan/44065/20170824-0001/www.bom.gov.au/climate/dwo/201708/html/IDCJDW2801.201708.shtml
+# https://web.archive.org.au/awa/20170823140237mp_/http://pandora.nla.gov.au/pan/44065/20170824-0001/www.bom.gov.au/climate/dwo/201708/html/IDCJDW2801.201708.shtml
 
 # soup = BeautifulSoup(r.content, 'html.parser')
+
+
 # print(soup.prettify())
 # content = soup.find_all('table')
 # print(content)

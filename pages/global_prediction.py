@@ -14,7 +14,7 @@ from sklearn.svm import LinearSVC
 
 # métriques 
 from imblearn.metrics import classification_report_imbalanced, geometric_mean_score
-from sklearn.metrics import classification_report,accuracy_score, f1_score, fbeta_score,  average_precision_score
+from sklearn.metrics import classification_report, accuracy_score, f1_score, fbeta_score,  average_precision_score
 from sklearn.metrics import make_scorer, confusion_matrix, precision_score, recall_score, precision_recall_curve
 from sklearn.metrics import PrecisionRecallDisplay
 from sklearn.metrics import precision_recall_curve, roc_curve, roc_auc_score
