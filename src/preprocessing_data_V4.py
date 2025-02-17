@@ -95,8 +95,8 @@ pipeline_nearest = \
 
 # Fittransform du pipeline (assez long donc je sauvegarde à l'issue)7
 # décommenter les deux lignes suivantes au premier run
-df_near = pipeline_nearest.fit_transform(df)
-df_near.to_csv('../data_saved/df_near2.csv')
+# df_near = pipeline_nearest.fit_transform(df)
+# df_near.to_csv('../data_saved/df_near2.csv')
 
 
 df_near = pd.read_csv('../data_saved/df_near2.csv', 

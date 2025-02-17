@@ -84,8 +84,10 @@ grid_metric_list = {"accuracy" : make_scorer(accuracy_score),
 
 
 # jeu de données
-dataset_list = ["test","V2t","V3t"]
-dataset_list = ["test", "V2 : variables initiales","V3 : variables composées (variation, moyenne glissante)"]
+dataset_list = ["V2t","V3t","V4t"]
+dataset_list = ["V2 : variables initiales",
+                "V3 : variables composées (variation, moyenne glissante)",
+                "V4 : ajouts de données récentes"]
 
 threshold = 0.25
 
@@ -109,11 +111,6 @@ with model1_col:
 
     dataset_choice1 = st.selectbox('Choisissez votre jeu de données', dataset_list, index = None)
 
-    if dataset_choice1 == "test":
-        df =  pd.read_csv("./data_saved/data_preprocessed_V3.csv", 
-                        index_col=["id_Location","id_Date"])
-        dataset = "test"
-
     if dataset_choice1 == "V2 : variables initiales":
         # st.write("WARNING :  La multicolinéarité n'est pas traitée dans ces données")
         df =  pd.read_csv("./data_saved/data_preprocessed_V2.csv", 
@@ -124,6 +121,12 @@ with model1_col:
         df =  pd.read_csv("./data_saved/data_preprocessed_V3.csv", 
                         index_col=["id_Location","id_Date"])
         dataset = "V3t"
+
+    elif dataset_choice1 == "V4 : ajouts de données récentes":
+        df =  pd.read_csv("./data_saved/data_preprocessed_V4.csv", 
+                        index_col=["id_Location","id_Date"])
+        dataset = "V4t"
+
 
     if dataset_choice1 :
         missing_percentages = df.isna().mean()
@@ -327,11 +330,6 @@ with model2_col:
 
     dataset_choice2 = st.selectbox('Choisissez votre jeu de données', dataset_list, index = None, key="m21")
 
-    if dataset_choice2 == "test":
-        df2 =  pd.read_csv("./data_saved/data_preprocessed_V3.csv", 
-                        index_col=["id_Location","id_Date"])
-        dataset2 = "test"
-
     if dataset_choice2 == "V2 : variables initiales":
         # st.write("WARNING :  La multicolinéarité n'est pas traitée dans ces données")
         df2 =  pd.read_csv("./data_saved/data_preprocessed_V2.csv", 
@@ -342,6 +340,11 @@ with model2_col:
         df2 =  pd.read_csv("./data_saved/data_preprocessed_V3.csv", 
                         index_col=["id_Location","id_Date"])
         dataset2 = "V3t"
+
+    elif dataset_choice2 == "V4 : ajouts de données récentes":
+        df2 =  pd.read_csv("./data_saved/data_preprocessed_V4.csv", 
+                        index_col=["id_Location","id_Date"])
+        dataset2 = "V4t"
 
     if dataset_choice2 :
         missing_percentages = df2.isna().mean()
