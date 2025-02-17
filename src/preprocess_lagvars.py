@@ -29,9 +29,11 @@ def add_lagdelta_vars(df, lag_vars, diff_vars):
 
     # création listes de dates
     data_dir = "../data/weatherAUS.csv"
-    df_init = init_data.initialize_data_weatherAU(data_dir)
-    df_init = preprocess_Date.preprocess_Date(df_init)
-    df_dates, date_list = functions_created.create_date_list(df_init)
+    # df_init = init_data.initialize_data_weatherAU(data_dir)
+    # df_init = preprocess_Date.preprocess_Date(df_init)
+    df_init = df 
+    df_init["Date"] =  df_init.index.get_level_values(1)
+    df_dates, date_list = functions_created.create_date_list( df_init)
 
     # liste des locations dans le df
     location_list = df.index.get_level_values(0).unique()
