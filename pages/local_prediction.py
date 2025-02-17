@@ -5,7 +5,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import plotly.express as px
+import plotly.graph_objects as go
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, f1_score, roc_auc_score, roc_curve, brier_score_loss, precision_recall_curve, accuracy_score, f1_score, roc_auc_score, precision_score, recall_score
@@ -501,7 +501,9 @@ if city :
 
         proba = model.predict_proba(cible_scaled)
 
+###################################################################################
 
+        st.title('5 days rain tomorrow forecast')
 
         with st.container(border = False):
 
@@ -678,5 +680,117 @@ if city :
                     st.write('plain sun')
 
 
+        with st.container(border = True):
+
+            cible_graph = np.round(cible.iloc[1:, ], 2)
+
+            fig = go.Figure()
+
+            fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['MinTemp'], line = dict(color = 'rgb(156, 4, 4)', width = 4)))
+            fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['MaxTemp'], line = dict(color = 'rgb(16, 0, 97)', width = 4)))
+            fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['Temp9am'], line = dict(color = 'rgb(156, 4, 4)', width = 4)))
+            fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['Temp3pm'], line = dict(color = 'rgb(16, 0, 97)', width = 4)))
+            fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['Rainfall'], line = dict(color = 'rgb(156, 4, 4)', width = 4)))
+            # fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['Evaporation'], line = dict(color = 'rgb(16, 0, 97)', width = 4)))
+            # fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['Sunshine'], line = dict(color = 'rgb(156, 4, 4)', width = 4)))
+            fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['WindGustSpeed'], line = dict(color = 'rgb(16, 0, 97)', width = 4)))
+            fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['WindSpeed9am'], line = dict(color = 'rgb(156, 4, 4)', width = 4)))
+            fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['WindSpeed3pm'], line = dict(color = 'rgb(16, 0, 97)', width = 4)))
+            fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['Humidity9am'], line = dict(color = 'rgb(156, 4, 4)', width = 4)))
+            fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['Humidity3pm'], line = dict(color = 'rgb(16, 0, 97)', width = 4)))
+            fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['Pressure9am'], line = dict(color = 'rgb(156, 4, 4)', width = 4)))
+            fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['Pressure3pm'], line = dict(color = 'rgb(16, 0, 97)', width = 4)))
+            fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['Cloud9am'], line = dict(color = 'rgb(156, 4, 4)', width = 4)))
+            fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['Cloud3pm'], line = dict(color = 'rgb(16, 0, 97)', width = 4)))
+
+# WindGustDir
+# WindDir9am
+# WindDir3pm
+
+            fig.update_layout(
+                title = 'Statistical Forecast',
+                showlegend = False,
+                height = 300,
+                updatemenus = [
+                    dict(
+                        active = 0,
+                        buttons = list([
+                            dict(label = 'Minimal Temperature (°C)',
+                                 method = 'update',
+                                 args = [{'visible' : [True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False]},
+                                          {'title' : 'Minimal Temperature (°C)'}]),
+                            dict(label = 'Maximal Temperature (°C)',
+                                 method = 'update',
+                                 args = [{'visible' : [False, True, False, False, False, False, False, False, False, False, False, False, False, False, False, False]},
+                                          {'title' : 'Maximal Temperature (°C)'}]),
+                            dict(label = 'Temperature at 9:00 am (°C)',
+                                 method = 'update',
+                                 args = [{'visible' : [False, False, True, False, False, False, False, False, False, False, False, False, False, False, False, False]},
+                                          {'title' : 'Temperature at 9:00am (°C)'}]),
+                            dict(label = 'Temperature at 3:00 pm (°C)',
+                                 method = 'update',
+                                 args = [{'visible' : [False, False, False, True, False, False, False, False, False, False, False, False, False, False, False, False]},
+                                          {'title' : 'Temperature at 3:00 pm (°C)'}]),
+                            dict(label = 'Quantity Rainfall (mm)',
+                                 method = 'update',
+                                 args = [{'visible' : [False, False, False, False, True, False, False, False, False, False, False, False, False, False, False, False]},
+                                          {'title' : 'Quantity Rainfall (mm)'}]),
+                            # dict(label = 'Evaporation (mm)',
+                            #      method = 'update',
+                            #      args = [{'visible' : [False, False, False, False, False, True, False, False, False, False, False, False, False, False, False, False]},
+                            #               {'title' : 'Evaporation (mm)'}]),
+                            # dict(label = 'Sunshine (hour)',
+                                #  method = 'update',
+                                #  args = [{'visible' : [False, False, False, False, False, False, True, False, False, False, False, False, False, False, False, False]},
+                                #           {'title' : 'Sunshine (hour)'}]),
+                            dict(label = 'Wing Gust Speed (km/h)',
+                                 method = 'update',
+                                 args = [{'visible' : [False, False, False, False, False, False, False, True, False, False, False, False, False, False, False, False]},
+                                          {'title' : 'Wing Gust Speed (km/h)'}]),
+                            dict(label = 'Wind Speed 9:00 am (km/h)',
+                                 method = 'update',
+                                 args = [{'visible' : [False, False, False, False, False, False, False, False, True, False, False, False, False, False, False, False]},
+                                          {'title' : 'Wind Speed 9:00 am (km/h)'}]),
+                            dict(label = 'Wind Speed 3:00 pm (km/h)',
+                                 method = 'update',
+                                 args = [{'visible' : [False, False, False, False, False, False, False, False, False, True, False, False, False, False, False, False]},
+                                          {'title' : 'Wind Speed 3:00 pm (km/h)'}]),
+                            dict(label = 'Humidity 9:00 am (%)',
+                                 method = 'update',
+                                 args = [{'visible' : [False, False, False, False, False, False, False, False, False, False, True, False, False, False, False, False]},
+                                          {'title' : 'Humidity 9:00 am (%)'}]),
+                            dict(label = 'Humidity 3:00 pm (%)',
+                                 method = 'update',
+                                 args = [{'visible' : [False, False, False, False, False, False, False, False, False, False, False, True, False, False, False, False]},
+                                          {'title' : 'Humidity 3:00 pm (%)'}]),
+                            dict(label = 'Pressure 9:00 am (hPa)',
+                                 method = 'update',
+                                 args = [{'visible' : [False, False, False, False, False, False, False, False, False, False, False, False, True, False, False, False]},
+                                          {'title' : 'Pressure 9:00 am (hPa)'}]),
+                            dict(label = 'Pressure 3:00 pm (hPa)',
+                                 method = 'update',
+                                 args = [{'visible' : [False, False, False, False, False, False, False, False, False, False, False, False, False, True, False, False]},
+                                          {'title' : 'Pressure 3:00 pm (hPa)'}]),
+                            dict(label = 'Nebulosity (cloud) 9:00 am (octa)',
+                                 method = 'update',
+                                 args = [{'visible' : [False, False, False, False, False, False, False, False, False, False, False, False, False, False, True, False]},
+                                          {'title' : 'Nebulosity (cloud) 9:00 am (octa)'}]),
+                            dict(label = 'Nebulosity (cloud) 3:00 pm (octa)',
+                                 method = 'update',
+                                 args = [{'visible' : [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, True]},
+                                          {'title' : 'Nebulosity (cloud) 3:00 pm (octa)'}]),
+                            ]),
+                        direction='down',
+                        pad={'r': 10, 't': 10},
+                        showactive=True,
+                        x=0.5,
+                        xanchor='center',
+                        y=1.15,
+                        yanchor='bottom',
+                    )
+                ]
+            )
+
+            st.plotly_chart(fig)
 
         st.write('ok')
