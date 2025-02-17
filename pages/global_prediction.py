@@ -84,10 +84,11 @@ grid_metric_list = {"accuracy" : make_scorer(accuracy_score),
 
 
 # jeu de données
-dataset_list = ["V2t","V3t","V4t"]
-dataset_list = ["V2 : variables initiales",
-                "V3 : variables composées (variation, moyenne glissante)",
-                "V4 : ajouts de données récentes"]
+#dataset_list = ["V2t","V3t","V4t"]
+dataset_list = ["V2 : Original dataset",
+                "V3 : New variables (daily growth rate, rolling mean)",
+                "V4 : New data addition",
+                "V5 : New variables + New data"]
 
 threshold = 0.25
 
@@ -97,36 +98,40 @@ model1_loaded = False
 model2_loaded = False
 
 # début stream lit
-st.title("Comparateur de modélisations")
+st.title("Model comparator on the whole dataset")
 
 model1_col, model2_col = st.columns(2, border = True)
 
 ##############################
-# Chargement Deuxième modèle
+# Chargement premier modèle
 ##############################
 
 with model1_col:
 
-    st.header("Modèle 1")
+    st.header("Model 1")
 
-    dataset_choice1 = st.selectbox('Choisissez votre jeu de données', dataset_list, index = None)
+    dataset_choice1 = st.selectbox('Select your dataset', dataset_list, index = None)
 
-    if dataset_choice1 == "V2 : variables initiales":
+    if dataset_choice1 == "V2 : Original dataset":
         # st.write("WARNING :  La multicolinéarité n'est pas traitée dans ces données")
         df =  pd.read_csv("./data_saved/data_preprocessed_V2.csv", 
                         index_col=["id_Location","id_Date"])
         dataset = "V2t"
 
-    elif dataset_choice1 == "V3 : variables composées (variation, moyenne glissante)":
+    elif dataset_choice1 == "V3 : New variables (daily growth rate, rolling mean)":
         df =  pd.read_csv("./data_saved/data_preprocessed_V3.csv", 
                         index_col=["id_Location","id_Date"])
         dataset = "V3t"
 
-    elif dataset_choice1 == "V4 : ajouts de données récentes":
+    elif dataset_choice1 == "V4 : New data addition":
         df =  pd.read_csv("./data_saved/data_preprocessed_V4.csv", 
                         index_col=["id_Location","id_Date"])
         dataset = "V4t"
 
+    elif dataset_choice1 == "V5 : New variables + New data":
+        df =  pd.read_csv("./data_saved/data_preprocessed_V5.csv", 
+                        index_col=["id_Location","id_Date"])
+        dataset = "V4t"
 
     if dataset_choice1 :
         missing_percentages = df.isna().mean()
@@ -134,7 +139,7 @@ with model1_col:
         columns_to_keep = missing_percentages[missing_percentages <= threshold].index
         columns_dropped = missing_percentages[missing_percentages > threshold].index
         df = df[columns_to_keep]
-        st.write("Dimensions du dataframe :", df.dropna().shape)
+        st.write("Dataframe shape :", df.dropna().shape)
         # st.write("Colonnes supprimées sur le dataframe :", columns_dropped.values)
 
         # séparation et scaling data
@@ -143,7 +148,7 @@ with model1_col:
         X_train, X_test = mf.scaling(X_train, X_test, scaler = MinMaxScaler())
 
         # Choix du classificateur
-        clf_choice1 = st.selectbox('Choisissez votre classificateur', classifier_list.keys(), 
+        clf_choice1 = st.selectbox('Choose your ML classifier', classifier_list.keys(), 
                                 index=None)
 
         #st.write('Le modèle choisi est :', clf_choice1)
@@ -153,13 +158,13 @@ with model1_col:
         optim_col1, train_col1 = st.columns(2, border = True)
             
         with optim_col1:
-            optim_choice1 = st.checkbox("Paramètres optimisés issus d'un gridsearch")
+            optim_choice1 = st.checkbox("Tuned parameters from gridsearch")
         
         with train_col1:
-            train_choice1 = st.checkbox('Entraînement')
+            train_choice1 = st.checkbox('New training')
 
         if optim_choice1: 
-            grid_metric_choice1 = st.selectbox('Choisissez la métrique à optimiser ',
+            grid_metric_choice1 = st.selectbox('Choose the gridsearch scoring metric',
                                             grid_metric_list, index=None)
             
             modeling_batch = "simplegrid"
@@ -171,7 +176,7 @@ with model1_col:
                 check_model_exist1 = Path(model_dir + grid_metric_choice1 + clf_choice1 + "search.pkl").exists()
                 
                 if check_model_exist1:
-                    st.write("chargement du modèle dans le dossier :", model_dir + grid_metric_choice1 + clf_choice1 + "search.pkl")
+                    st.write("Model loading from folder :", model_dir + grid_metric_choice1 + clf_choice1 + "search.pkl")
 
                     # charge le gridsearch
                     #with open(model_dir  + grid_metric_choice  + clf_choice  +"search.pkl", 'rb') as s:
@@ -181,23 +186,23 @@ with model1_col:
                     with open(cwd+ model_dir  + grid_metric_choice1 + "_" + clf_choice1 +"_tuned.pkl", 'rb') as m:
                         model1 = pickle.load(m)
 
-                    st.write("Paramètres du modèle : \n ", model1)
+                    st.write("Model Parameters : \n ", model1)
                     model1_loaded = True
                 
                 else: 
-                    st.write("Absence du modèle dans le dossier :", model_dir + grid_metric_choice1 + clf_choice1 + "search.pkl")
-                    parameters_choice1 = st.selectbox('Veuillez choisir vos paramètres ', 'par défaut', index = None)
+                    st.write("No model at :", model_dir + grid_metric_choice1 + clf_choice1 + "search.pkl")
+                    parameters_choice1 = st.selectbox('Choose your parameters ', 'Default parameters', index = None)
                     model1 = classifier_list[clf_choice1]
                     if parameters_choice1:
-                        st.write("Le modèle va être entraîné avec les paramètres suivants : \n ", model1) 
+                        st.write("The selected model will be trained with the following parameters : \n ", model1) 
                         model1.fit(X_train, y_train)
                         model1_loaded = True
 
         elif train_choice1:
-            parameters_choice1 = st.selectbox('Veuillez choisir vos paramètres ', 'par défaut', index = None)
+            parameters_choice1 = st.selectbox('Choose your parameters ', 'Default parameters', index = None)
             model1 = classifier_list[clf_choice1]
             if parameters_choice1:
-                st.write("Entrainement avec les paramètres suivants : \n ", model1) 
+                st.write("The selected model will be trained with the following parameters : \n ", model1) 
                 model1.fit(X_train, y_train)
                 model1_loaded = True
 
@@ -211,19 +216,19 @@ with model1_col:
             y_pred = model1.predict(X_test)
             
 
-            st.write("Choisissez les résultats à afficher")
+            st.write("Choose the results to print")
 
             inter_col, cm_col, report_col = st.columns(3, border = True)
 
             with inter_col : 
-                inter_choice = st.checkbox("Graphique d'interprétabilité")
+                inter_choice = st.checkbox("Interpretability plot")
             with cm_col : 
-                cm_choice = st.checkbox("Matrice de confusion")
+                cm_choice = st.checkbox("Confusion matrix")
             with report_col : 
-                report_choice = st.checkbox("Métriques")
+                report_choice = st.checkbox("Metrics")
 
             if inter_choice:
-                n_feat = st.slider('Nombres de features', 
+                n_feat = st.slider('Number of features', 
                                 min_value = 1, 
                                 max_value = len(X_train.columns), 
                                 value = 10)
@@ -247,12 +252,12 @@ with model1_col:
             # proba
             # y_probs = model.predict_proba(X_test)
 
-                st.write("Choisissez un approfondissement")
+                st.write("Choose a deepening")
                 seuil_col, location_col = st.columns(2, border = True)
                 with seuil_col: 
-                    seuil_choice = st.checkbox("Seuil de classification")
+                    seuil_choice = st.checkbox("Classification treshold")
                 with location_col: 
-                    location_choice = st.checkbox("Qualité des prédictions par station")
+                    location_choice = st.checkbox("Forecast by weather station")
 
                 if location_choice:
                     plot_FN, plot_FP = mf.st_plot_FP_FN(
@@ -270,7 +275,7 @@ with model1_col:
                     st.pyplot(seuil_plot)
                     st.pyplot(metric_plot)
 
-                    threshold = st.slider("Ajustement du seuil", 0.0, 1.0, value = 0.2, step=0.1)
+                    threshold = st.slider("Treshold adjustment", 0.0, 1.0, value = 0.2, step=0.1)
                     adjust_report, cm_avant, cm_apres = mf.adjust_classification_treshold(model1,
                                         X_train, X_test, y_train, y_test,  
                                         threshold)
@@ -282,10 +287,10 @@ with model1_col:
                         st.dataframe(adjust_report.iloc[:,1])
                         st.dataframe(cm_apres)
 
-                st.write("Une prédiction?")
+                st.write("Let's try a forecast?")
                 location1, time1 = st.columns(2, border = True)
                 with location1:
-                    city = st.selectbox(label = 'Choisissez une ville',
+                    city = st.selectbox(label = 'Choose a city',
                                 options = sorted(df.index.get_level_values(0).unique()),
                                 index = None,
                                 label_visibility="visible",
@@ -295,7 +300,7 @@ with model1_col:
                 if city :
                     date1 = X_test.loc[city,:].index.get_level_values(0)[-10]
                     with time1:
-                        date1 = st.date_input(label = 'Date choisie',
+                        date1 = st.date_input(label = 'Select a Date',
                                         help = 'year-month-day',
                                         value = date1)
                     
@@ -306,19 +311,19 @@ with model1_col:
                     pred1 = model1.predict(X_predict.reshape(1, -1))
                     prob1 = model1.predict_proba(X_predict.reshape(1, -1))
                     if pred1 == 1:
-                        st.write("Sortez le parapluie, il pleuvra le ",datetomorrow1, " à ", city)
-                        st.write("Fiabilité : ", str(round(prob1[0,1]*100, ndigits=0)), "%")
+                        st.write("Don't forget your umbrella, it is going to rain on the ",datetomorrow1, " at ", city)
+                        st.write("Probability : ", str(round(prob1[0,1]*100, ndigits=0)), "%")
                     if pred1 == 0:
-                        st.write("Pas de pluie à prévoir le ",datetomorrow1, " à ", city)
-                        st.write("Fiabilité : ", str(round(prob1[0,0]*100, ndigits=0)), "%")
+                        st.write("No rain on the ",datetomorrow1, " at ", city)
+                        st.write("Probability : ", str(round(prob1[0,0]*100, ndigits=0)), "%")
                     
                     y_true1 = y_test.loc[(city, date1),]
                     if  y_true1 == 1.0:
-                        st.write("Dans la réalité, il a plu à  ", city, " le ", datetomorrow1)
-                        st.write("Il est tombé", str(df.loc[(city, datetomorrow1),"Rainfall"]), " mm")
+                        st.write("In reality, it rained at  ", city, " on the ", datetomorrow1)
+                        st.write("It rained ", str(df.loc[(city, datetomorrow1),"Rainfall"]), " mm")
                     if  y_true1 == 0.0:
-                        st.write("Dans la réalité, il n'a pas plu à  ", city, " le ", datetomorrow1)
-                        st.write("Il est tombé", str(df.loc[(city, datetomorrow1),"Rainfall"]), " mm")
+                        st.write("In reality, it rained at  ", city, " on the ", datetomorrow1)
+                        st.write("It rained ", str(df.loc[(city, datetomorrow1),"Rainfall"]), " mm")
 
 ##############################
 # Chargement deuxième modèle
@@ -326,25 +331,30 @@ with model1_col:
 
 with model2_col:
 
-    st.header("Modèle 2")
+    st.header("Model 2")
 
-    dataset_choice2 = st.selectbox('Choisissez votre jeu de données', dataset_list, index = None, key="m21")
+    dataset_choice2 = st.selectbox('Select your dataset', dataset_list, index = None, key="m21")
 
-    if dataset_choice2 == "V2 : variables initiales":
+    if dataset_choice2 == "V2 : Original dataset":
         # st.write("WARNING :  La multicolinéarité n'est pas traitée dans ces données")
         df2 =  pd.read_csv("./data_saved/data_preprocessed_V2.csv", 
                         index_col=["id_Location","id_Date"])
         dataset2 = "V2t"
 
-    elif dataset_choice2 == "V3 : variables composées (variation, moyenne glissante)":
+    elif dataset_choice2 == "V3 : New variables (daily growth rate, rolling mean)":
         df2 =  pd.read_csv("./data_saved/data_preprocessed_V3.csv", 
                         index_col=["id_Location","id_Date"])
         dataset2 = "V3t"
 
-    elif dataset_choice2 == "V4 : ajouts de données récentes":
+    elif dataset_choice2 == "V4 : New data addition":
         df2 =  pd.read_csv("./data_saved/data_preprocessed_V4.csv", 
                         index_col=["id_Location","id_Date"])
         dataset2 = "V4t"
+
+    elif dataset_choice2 == "V5 : New variables + New data":
+        df2 =  pd.read_csv("./data_saved/data_preprocessed_V5.csv", 
+                        index_col=["id_Location","id_Date"])
+        dataset2 = "V5t"
 
     if dataset_choice2 :
         missing_percentages = df2.isna().mean()
@@ -352,7 +362,7 @@ with model2_col:
         columns_to_keep = missing_percentages[missing_percentages <= threshold].index
         columns_dropped = missing_percentages[missing_percentages > threshold].index
         df2 = df2[columns_to_keep]
-        st.write("Dimensions du dataframe :", df2.dropna().shape)
+        st.write("Dataframe shape :", df2.dropna().shape)
         # st.write("Colonnes supprimées sur le dataframe :", columns_dropped.values)
 
         # séparation et scaling data
@@ -361,7 +371,7 @@ with model2_col:
         X_train2, X_test2 = mf.scaling(X_train2, X_test2, scaler = MinMaxScaler())
 
         # Choix du classificateur
-        clf_choice2 = st.selectbox('Choisissez votre classificateur', classifier_list.keys(), 
+        clf_choice2 = st.selectbox('Choose your ML classifier', classifier_list.keys(), 
                                 index=None, key="m22")
 
         #st.write('Le modèle choisi est :', clf_choice1)
@@ -371,13 +381,13 @@ with model2_col:
         optim_col2, train_col2 = st.columns(2, border = True)
             
         with optim_col2:
-            optim_choice2 = st.checkbox("Paramètres optimisés issus d'un gridsearch", key="m23")
+            optim_choice2 = st.checkbox("Tuned parameters from gridsearch", key="m23")
         
         with train_col2:
-            train_choice2 = st.checkbox('Entraînement', key="m24")
+            train_choice2 = st.checkbox('New training', key="m24")
 
         if optim_choice2: 
-            grid_metric_choice2 = st.selectbox('Choisissez la métrique à optimiser ',
+            grid_metric_choice2 = st.selectbox('Choose the gridsearch scoring metric',
                                             grid_metric_list, index=None, key="m25")
             
             modeling_batch = "simplegrid"
@@ -389,7 +399,7 @@ with model2_col:
                 check_model_exist2 = Path(model_dir2 + grid_metric_choice2 + clf_choice2 + "search.pkl").exists()
                 
                 if check_model_exist2:
-                    st.write("chargement du modèle dans le dossier :", model_dir2 + grid_metric_choice2 + clf_choice2 + "search.pkl")
+                    st.write("Model loading from folder :", model_dir2 + grid_metric_choice2 + clf_choice2 + "search.pkl")
 
                     # charge le gridsearch
                     #with open(model_dir  + grid_metric_choice  + clf_choice  +"search.pkl", 'rb') as s:
@@ -399,23 +409,23 @@ with model2_col:
                     with open(cwd+ model_dir2  + grid_metric_choice2 + "_" + clf_choice2 +"_tuned.pkl", 'rb') as m:
                         model2 = pickle.load(m)
 
-                    st.write("Paramètres du modèle : \n ", model2)
+                    st.write("Model Parameters : \n ", model2)
                     model2_loaded = True
                 
                 else: 
-                    st.write("Absence du modèle dans le dossier :", model_dir2 + grid_metric_choice2 + clf_choice2 + "search.pkl")
-                    parameters_choice2 = st.selectbox('Veuillez choisir vos paramètres ', 'par défaut', index = None)
+                    st.write("No model at :", model_dir2 + grid_metric_choice2 + clf_choice2 + "search.pkl")
+                    parameters_choice2 = st.selectbox('Choose your parameters ', 'Default parameters', index = None)
                     model2 = classifier_list[clf_choice2]
                     if parameters_choice2:
-                        st.write("Le modèle va être entraîné avec les paramètres suivants : \n ", model2) 
+                        st.write("The selected model will be trained with the following parameters : \n ", model2) 
                         model2.fit(X_train2, y_train2)
                         model2_loaded = True
 
         elif train_choice2:
-            parameters_choice2 = st.selectbox('Veuillez choisir vos paramètres ', 'par défaut', index = None, key="m26")
+            parameters_choice2 = st.selectbox('Choose your parameters ', 'Default parameters', index = None, key="m26")
             model2 = classifier_list[clf_choice2]
             if parameters_choice2:
-                st.write("Entrainement avec les paramètres suivants : \n ", model2) 
+                st.write("The selected model will be trained with the following parameters : \n ", model2) 
                 model2.fit(X_train2, y_train2)
                 model2_loaded = True
 
@@ -430,19 +440,19 @@ with model2_col:
             y_pred2 = model2.predict(X_test2)
             
 
-            st.write("Choisissez les résultats à afficher")
+            st.write("Choose the results to print")
 
             inter_col2, cm_col2, report_col2 = st.columns(3, border = True)
 
             with inter_col2 : 
-                inter_choice2 = st.checkbox("Graphique d'interprétabilité", key="m27")
+                inter_choice2 = st.checkbox("Interpretability plot", key="m27")
             with cm_col2 : 
-                cm_choice2 = st.checkbox("Matrice de confusion", key="m28")
+                cm_choice2 = st.checkbox("Confusion matrix", key="m28")
             with report_col2 : 
-                report_choice2 = st.checkbox("Métriques", key="m214")
+                report_choice2 = st.checkbox("Metrics", key="m214")
 
             if inter_choice2:
-                n_feat2 = st.slider('Nombres de features', 
+                n_feat2 = st.slider('Number of features', 
                                 min_value = 1, 
                                 max_value = len(X_train2.columns), 
                                 value = 10, key="m217")
@@ -463,12 +473,12 @@ with model2_col:
                 # st.dataframe(report)
                 st.pyplot(plot_res2)
 
-                st.write("Choisissez un approfondissement")
+                st.write("Choose a deepening")
                 seuil_col2, location_col2 = st.columns(2, border = True)
                 with seuil_col2: 
-                    seuil_choice2 = st.checkbox("Seuil de classification", key="m29")
+                    seuil_choice2 = st.checkbox("Classification treshold", key="m29")
                 with location_col2: 
-                    location_choice2 = st.checkbox("Qualité des prédictions par station", key="m210")
+                    location_choice2 = st.checkbox("Forecast by weather station", key="m210")
 
                 if location_choice2:
                     plot_FN2, plot_FP2 = mf.st_plot_FP_FN(
@@ -486,7 +496,7 @@ with model2_col:
                     st.pyplot(seuil_plot2)
                     st.pyplot(metric_plot2)
 
-                    threshold2 = st.slider("Ajustement du seuil", 0.0, 1.0, value = 0.2, step=0.1, key="m211")
+                    threshold2 = st.slider("Treshold adjustment", 0.0, 1.0, value = 0.2, step=0.1, key="m211")
                     adjust_report2, cm_avant2, cm_apres2 = mf.adjust_classification_treshold(model2,
                                         X_train2, X_test2, y_train2, y_test2,  
                                         threshold2)
@@ -498,10 +508,10 @@ with model2_col:
                         st.dataframe(adjust_report2.iloc[:,1])
                         st.dataframe(cm_apres2)
 
-                st.write("Une prédiction?")
+                st.write("Let's try a forecast?")
                 location2, time2 = st.columns(2, border = True)
                 with location2:
-                    city2 = st.selectbox(label = 'Choisissez une ville',
+                    city2 = st.selectbox(label = 'Choose a city',
                                 options = sorted(df2.index.get_level_values(0).unique()),
                                 index = None,
                                 label_visibility="visible",
@@ -512,7 +522,7 @@ with model2_col:
                 if city2 :
                     date2 = X_test2.loc[city2,:].index.get_level_values(0)[-10]
                     with time2:
-                        date2 = st.date_input(label = 'Date choisie',
+                        date2 = st.date_input(label = 'Select a Date',
                                         help = 'year-month-day',
                                         value = date2, 
                                         key="m213")
@@ -524,17 +534,17 @@ with model2_col:
                     pred2 = model2.predict(X_predict2.reshape(1, -1))
                     prob2 = model2.predict_proba(X_predict2.reshape(1, -1))
                     if pred2 == 1:
-                        st.write("Sortez le parapluie, il pleuvra le ",datetomorrow2, " à ", city2)
-                        st.write("Fiabilité : ", str(round(prob2[0,1]*100, ndigits=0)), "%")
+                        st.write("Don't forget your umbrella, it is going to rain on the ",datetomorrow2, " à ", city2)
+                        st.write("Probability : ", str(round(prob2[0,1]*100, ndigits=0)), "%")
                     if pred2 == 0:
-                        st.write("Pas de pluie à prévoir le ",datetomorrow2, " à ", city2)
-                        st.write("Fiabilité : ", str(round(prob2[0,0]*100, ndigits=0)), "%")
+                        st.write("No rain on the ",datetomorrow2, " à ", city2)
+                        st.write("Probability : ", str(round(prob2[0,0]*100, ndigits=0)), "%")
                     
                     y_true2 = y_test2.loc[(city2, date2),]
                     if  y_true2 == 1.0:
-                        st.write("Dans la réalité, il a plu à  ", city2, " le ", datetomorrow2)
-                        st.write("Il est tombé", str(df2.loc[(city2, datetomorrow2),"Rainfall"]), " mm")
+                        st.write("In reality, it rained at  ", city2, " on the ", datetomorrow2)
+                        st.write("It rained ", str(df2.loc[(city2, datetomorrow2),"Rainfall"]), " mm")
                     if  y_true2 == 0.0:
-                        st.write("Dans la réalité, il n'a pas plu à  ", city2, " le ", datetomorrow2)
-                        st.write("Il est tombé", str(df2.loc[(city2, datetomorrow2),"Rainfall"]), " mm")
+                        st.write("In reality, it rained at  ", city2, " on the ", datetomorrow2)
+                        st.write("It rained ", str(df2.loc[(city2, datetomorrow2),"Rainfall"]), " mm")
 
