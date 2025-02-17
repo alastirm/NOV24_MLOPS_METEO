@@ -18,14 +18,11 @@ station_ID.head()
 ## time list 
 
 year_list = ["2024","2025"]
-month_list = ["01","02","03","04","05","06","07","08","09","10","11","12"]
-
-year = "2025"
-month = "01"
-
+month_list = {"2024": ["01","02","03","04","05","06","07","08","09","10","11","12"],
+                "2025": ["01","02"]}
 
 for year in year_list :
-    for month in month_list :
+    for month in month_list[year] :
         for location in station_ID.Location2:
             print(location)
             id_location = station_ID.loc[(station_ID.Location2 == location) & 
@@ -97,7 +94,7 @@ for year in year_list :
 # test sur les archives
 
 # 2017 - 2020
-y
+
 
 # https://webarchive.nla.gov.au/awa/20170823140252/http://pandora.nla.gov.au/pan/44065/20170824-0001/www.bom.gov.au/climate/dwo/201707/html/IDCJDW2801.201707.shtml
 # https://webarchive.nla.gov.au/awa/20180823140000/http://pandora.nla.gov.au/pan/44065/20180824-0000/www.bom.gov.au/climate/dwo/index.html

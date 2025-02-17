@@ -9,7 +9,7 @@ def initialize_data_weatherAU(data_dir):
 
     # Lecture dataset et infos
     df = pd.read_csv(filepath_or_buffer=data_dir, sep=",")
-
+    
     # Ajout de la variable climate
     Location_climate = pd.read_csv("../data/Location_Climate_unique.csv")
     df = pd.merge(df, Location_climate,  on="Location", how="left")
