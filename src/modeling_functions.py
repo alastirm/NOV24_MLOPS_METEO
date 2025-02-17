@@ -23,7 +23,7 @@ from sklearn.tree import DecisionTreeClassifier
 from imblearn.ensemble import BalancedRandomForestClassifier, BalancedBaggingClassifier
 
 import xgboost as xgb
-import shap
+#import shap
 
 # métriques 
 from imblearn.metrics import classification_report_imbalanced, geometric_mean_score
