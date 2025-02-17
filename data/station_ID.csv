@@ -1,0 +1,64 @@
+Location2,IDCJDW,Location,comment,skiprows
+Adelaide,5081,Adelaide,,7
+Albany,6001,Albany,,7
+Albury,2002,Albury,,7
+AliceSprings,8002,AliceSprings,,7
+BadgerysCreek,2005,BadgerysCreek,,5
+Ballarat,3005,Ballarat,,7
+Bendigo,3008,Bendigo,,7
+Brisbane,4019,Brisbane,,7
+Cairns,4024,Cairns,,7
+Canberra,2801,Canberra,,7
+Cobar,2029,Cobar,,7
+CoffsHarbour,2030,CoffsHarbour,,7
+Dartmoor,3101,Dartmoor,,7
+Darwin,8014,Darwin,,7
+GoldCoast,4050,GoldCoast,,7
+Hobart,7021,Hobart,,7
+Katherine,8048,Katherine,8024 not working,7
+Launceston,7025,Launceston,,7
+Melbourne,3033,Melbourne,,7
+MelbourneAirport,3049,MelbourneAirport,,7
+Mildura,3051,Mildura,,7
+Moree,2084,Moree,,7
+MountGambier,5041,MountGambier,,7
+MountGinini,,MountGinini,,7
+Newcastle,2097,Newcastle,2098 not working,7
+Nhil,3059,Nhil,,7
+NorahHead,2099,NorahHead,,7
+NorfolkIsland,2100,NorfolkIsland,,7
+Nuriootpa,5049,Nuriootpa,,7
+PearceRAAF,,PearceRAAF,,7
+Penrith,2111,Penrith,,7
+Perth,6111,Perth,,7
+PerthAirport,6110,PerthAirport,,7
+Portland,3068,Portland,,7
+Richmond,2119,Richmond,,7
+Sale,3022,Sale,,7
+SalmonGums,6119,SalmonGums,,7
+Sydney,2124,Sydney,,9
+SydneyAirport,2125,SydneyAirport,,7
+Townsville,4128,Townsville,,7
+Tuggeranong,2802,Tuggeranong,,7
+Uluru,,Uluru,,7
+WaggaWagga ,2139,WaggaWagga ,,7
+Walpole ,6138,Walpole ,,7
+Watsonia ,3093,Watsonia ,,7
+Williamtown ,2145,Williamtown ,,7
+Witchcliffe,6081,Witchcliffe,,7
+Wollongong,2146,Wollongong,,7
+Woomera ,5072,Woomera ,,7
+Broome,6015,,,7
+Casey,9203,,,7
+Christmas,6026,,,7
+CocosIslands,6027,,,7
+Davis,9201,,,7
+Devonport,7013,,,7
+Kalgoorlie-Boulder,6061,,,7
+LordHowe,2077,,,7
+Macquarie,9204,,,7
+Mawson,9202,,,7
+PortLincoln,5055,,,7
+Renmark,5059,,,7
+TennantCreek,8045,,,7
+Wynyard,7057,,,7
