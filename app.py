@@ -105,7 +105,7 @@ with st.container(border = False):
 
     with glob:
         st.markdown('<div class = "page_link">', unsafe_allow_html = True)
-        st.page_link('./pages/page_comp_global.py', label = 'Global Prediction', icon=None, help=None, disabled=False, use_container_width=None)
+        st.page_link('./pages/global_prediction.py', label = 'Global Prediction', icon=None, help=None, disabled=False, use_container_width=None)
         st.markdown('</div>', unsafe_allow_html = True)
 
     with loc:
