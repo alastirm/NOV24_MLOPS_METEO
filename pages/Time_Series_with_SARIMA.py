@@ -26,27 +26,27 @@ st.set_page_config(page_title="MeteoStralia",
 
 with st.container():
 
-    st.subheader("Modélisations & Prédictions des variables météorologiques - avec SARIMA")
+    st.subheader("Modelling & Prediction of meteorological variables with SARIMA")
     st.markdown("<br>", unsafe_allow_html=True)
 
-    st.subheader("Sélectionner une station et une variable à étudier")
+    st.subheader("Select a station and a variable to study")
     st.markdown("<br>", unsafe_allow_html=True)
 
     location, variable = st.columns(2)
 
     with location:
-        city = st.selectbox(label="Sélectionner une Station",
+        city = st.selectbox(label="Select a Station",
                             options=sorted(df["Location"].unique()),
                             index=None,
                             label_visibility="visible",
-                            help="Sélectionner une Station",
-                            placeholder="Aucune station sélectionnée")
+                            help="Select a station",
+                            placeholder="No station selected")
     with variable:
-        var_to_study = st.selectbox(label="Sélectionner une Variable",
+        var_to_study = st.selectbox(label="Select a Variable",
                                     options=df.columns[2:],
                                     index=None,
-                                    help="Sélectionner une variable à analyser",
-                                    placeholder="Aucune variable sélectionnée")
+                                    help="Select a variable to analyze",
+                                    placeholder="No variable selected")
     st.markdown("<br>", unsafe_allow_html=True)
 
 
@@ -67,7 +67,7 @@ if city and var_to_study:
 
     # Décomposition de la série temporelle
     st.markdown("<br>", unsafe_allow_html=True)
-    st.subheader("Décomposition de la série temporelle")
+    st.subheader("Time series decomposition")
     st.markdown("""
         <style>
         .custom-box {
@@ -80,7 +80,7 @@ if city and var_to_study:
         </style>
 
         <div class="custom-box">
-        L'analyse de la série temporelle passe tout d’abord par la décomposition de la série :
+        Analysis of time series begins with a decomposition of the serie :
         </div>
     """, unsafe_allow_html=True)
     result = seasonal_decompose(city_data[var_to_study], model="additive", period=365)
@@ -115,7 +115,7 @@ if city and var_to_study:
 
     # Visualisation de l'ACF et PACF
     st.markdown("<br>", unsafe_allow_html=True)
-    st.subheader("Autocorrélation et Autocorrélation Partielle")
+    st.subheader("Autocorrelation and Partial Autocorrelation")
     st.markdown("""
         <style>
         .custom-box {
@@ -128,8 +128,8 @@ if city and var_to_study:
         </style>
 
         <div class="custom-box">
-        Les graphiques d'autocorrélation et d'autocorrélation partielle permettent de comprendre les propriétés de la série temporelle 
-        et de déterminer les paramètres appropriés pour le modèle SARIMA :
+        Autocorrelation and partial autocorrelation graphs help to understand the properties of time series 
+        and to determine the appropriate parameters for SARIMA Model :
         </div>
     """, unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -154,7 +154,7 @@ if city and var_to_study:
 
     # Création et ajustement du modèle SARIMA
     st.markdown("<br>", unsafe_allow_html=True)
-    st.subheader("Modèle SARIMA")
+    st.subheader("SARIMA Model")
     st.markdown("""
         <style>
         .custom-box {
@@ -167,16 +167,16 @@ if city and var_to_study:
         </style>
 
         <div class="custom-box">
-        Modèle statistique utilisé pour analyser et prévoir les longues séries temporelles, tout en prenant en compte les variations saisonières :
+        Statistical model used to analyze and forecast long time series, including seasonal variations :
         </div>
     """, unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
     st.code(""" 
             sarima_model = SARIMAX(train, 
-                                   exog = train_features,              # Inclure les variables exogènes qui peuvent influencer la variable cible
+                                   exog = train_features,              # Include exogenous variables that may influence the target variable
                                    order = (1, 1, 1), 
-                                   seasonal_order = (1, 1, 1, 12),     # 12 pour une saisonnalité annuelle
-                                   enforce_stationarity = False,       # Accepter des séries non stationnaires
+                                   seasonal_order = (1, 1, 1, 12),     # 12 for annual seasonality
+                                   enforce_stationarity = False,       # Accept non-stationary series
                                    enforce_invertibility = False)
             """, language="python")
     st.markdown("<br>", unsafe_allow_html=True)
@@ -197,7 +197,7 @@ if city and var_to_study:
 
     # Visualisation des prédictions
     st.markdown("<br>", unsafe_allow_html=True)
-    st.subheader("Prévisions du modèle pour la variable")
+    st.subheader("Model predictions")
     st.markdown("""
         <style>
         .custom-box {
@@ -210,7 +210,7 @@ if city and var_to_study:
         </style>
 
         <div class="custom-box">
-        Représentation visuelle des prédictions du modèle :
+        Visual representation of model predictions :
         </div>
     """, unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -233,7 +233,7 @@ if city and var_to_study:
 
     # Évaluation du modèle
     st.markdown("<br>", unsafe_allow_html=True)
-    st.subheader("Evaluation du modèle")
+    st.subheader("Model evaluation")
     st.markdown("""
         <style>
         .custom-box {
@@ -246,7 +246,7 @@ if city and var_to_study:
         </style>
 
         <div class="custom-box">
-        Plusieurs métriques sont utilisées pour évaluer la performance du modèle :
+        Several metrics are used to assess model performance :
         </div>
     """, unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
