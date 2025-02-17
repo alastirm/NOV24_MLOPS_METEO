@@ -116,12 +116,12 @@ with st.container(border = False):
 
     with pro:
         st.markdown('<div class = "page_link">', unsafe_allow_html = True)
-        st.page_link('./pages/Series_Temporelles_Prophet.py', label = 'Prophet Prediction', icon=None, help=None, disabled=False, use_container_width=None)
+        st.page_link('./pages/Time_Series_with_Prophet.py', label = 'Prophet Prediction', icon=None, help=None, disabled=False, use_container_width=None)
         st.markdown('</div>', unsafe_allow_html = True)
 
     with sar:
         st.markdown('<div class = "page_link">', unsafe_allow_html = True)
-        st.page_link('./pages/Series_Temporelles_SARIMA.py', label = 'Sarima Prediction', icon=None, help=None, disabled=False, use_container_width=None)
+        st.page_link('./pages/Time_Series_with_SARIMA.py', label = 'Sarima Prediction', icon=None, help=None, disabled=False, use_container_width=None)
         st.markdown('</div>', unsafe_allow_html = True)
 
     st.markdown('</div>', unsafe_allow_html=True)
