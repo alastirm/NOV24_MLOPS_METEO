@@ -110,7 +110,7 @@ with st.container(border = False):
 
     with loc:
         st.markdown('<div class = "page_link">', unsafe_allow_html = True)
-        st.page_link('./pages/page_location.py', label = 'Local Prediction', icon=None, help=None, disabled=False, use_container_width=None)
+        st.page_link('./pages/local_prediction.py', label = 'Local Prediction', icon=None, help=None, disabled=False, use_container_width=None)
         st.markdown('</div>', unsafe_allow_html = True)
 
 
