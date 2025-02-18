@@ -14,7 +14,9 @@ from sklearn.linear_model import LogisticRegression
 
 import emoji
 
-sys.path.insert(0, '/home/mathieu/code/MathieuAmacher/datascientest/NOV24-BDS-METEO/src2')
+#sys.path.insert(0, '/home/mathieu/code/MathieuAmacher/datascientest/NOV24-BDS-METEO/src2')
+# changement relative path
+sys.path.insert(0, './src2')
 # import preprocess
 from src2 import preprocessing, modelisation
 
@@ -311,8 +313,9 @@ if city :
                 # if df_city.iloc[-2,:]['Humidity9am'].astype(float) != 0:
                 #     value = df_city.iloc[-2,:]['Humidity9am'].astype(float)
                 # else:
-                value = df_city['Humidity9am'].median().astype(float)
-
+                #changement erreur si je laisse float
+                # value = df_city['Humidity9am'].median().astype(float)
+                value = df_city['Humidity9am'].median()
                 Humidity9am = st.slider(
                     label = '9:00 am',
                     min_value = 0.0,
