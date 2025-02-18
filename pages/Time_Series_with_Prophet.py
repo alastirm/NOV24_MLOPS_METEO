@@ -15,13 +15,15 @@ from prophet import Prophet
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from io import BytesIO
 
+import emoji
+
 
 url = "data/weatherAUS.csv"
 df = pd.read_csv(url)
 
 st.set_page_config(page_title="MeteoStralia",
                    layout="wide",
-                   page_icon=emoji.emojize(":thumbs_up:"))
+                   page_icon = emoji.emojize('🦘'))
 
 with st.container():
 
@@ -132,7 +134,7 @@ if city and var_to_study:
         </div>
     """, unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
-    st.code(""" 
+    st.code("""
             model = Prophet()
             model.fit(train)
             """, language="python")
@@ -148,7 +150,7 @@ if city and var_to_study:
     if len(forecast_test) != len(test):
         print(f"Attention : longueur différente entre test ({len(test)}) et forecast_test ({len(forecast_test)})")
         test = test[test["ds"].isin(forecast_test["ds"])]
-    predictions = forecast_test["yhat"].values    
+    predictions = forecast_test["yhat"].values
 
     # Visualisation des prédictions
     st.markdown("<br>", unsafe_allow_html=True)
@@ -171,33 +173,33 @@ if city and var_to_study:
     st.markdown("<br>", unsafe_allow_html=True)
     fig = go.Figure()
     fig.add_trace(go.Scatter(
-        x=forecast["ds"], 
-        y=forecast["yhat"], 
-        mode="lines", 
-        name="Predictions", 
+        x=forecast["ds"],
+        y=forecast["yhat"],
+        mode="lines",
+        name="Predictions",
         line=dict(color="red", width=2)
     ))
     fig.add_trace(go.Scatter(
-        x=forecast["ds"], 
-        y=forecast["yhat_upper"], 
-        mode="lines", 
-        name="Upper interval", 
+        x=forecast["ds"],
+        y=forecast["yhat_upper"],
+        mode="lines",
+        name="Upper interval",
         line=dict(color="lightgray", dash="dot")
     ))
     fig.add_trace(go.Scatter(
-        x=forecast["ds"], 
-        y=forecast["yhat_lower"], 
-        mode="lines", 
-        name="Lower interval", 
+        x=forecast["ds"],
+        y=forecast["yhat_lower"],
+        mode="lines",
+        name="Lower interval",
         line=dict(color="lightgray", dash="dot"),
         fill="tonexty",
         fillcolor="rgba(169,169,169,0.2)"
     ))
     fig.add_trace(go.Scatter(
-        x=test["ds"], 
-        y=test["y"], 
-        mode="markers", 
-        name="Real data", 
+        x=test["ds"],
+        y=test["y"],
+        mode="markers",
+        name="Real data",
         marker=dict(color="black", size=4)
     ))
     fig.update_layout(

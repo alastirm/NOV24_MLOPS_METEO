@@ -1,18 +1,21 @@
 import sys
 import os
 
+import emoji
+
+
 import streamlit as st
 import pandas as pd
 import numpy as np
 import datetime
 
-# modèles 
+# modèles
 from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier, BaggingClassifier 
+from sklearn.ensemble import RandomForestClassifier, BaggingClassifier
 from imblearn.ensemble import BalancedRandomForestClassifier, BalancedBaggingClassifier
 from sklearn.svm import LinearSVC
 
-# métriques 
+# métriques
 from imblearn.metrics import classification_report_imbalanced, geometric_mean_score
 from sklearn.metrics import classification_report, accuracy_score, f1_score, fbeta_score,  average_precision_score
 from sklearn.metrics import make_scorer, confusion_matrix, precision_score, recall_score, precision_recall_curve
@@ -25,52 +28,55 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler
 # import de modèle entraîné
 
 import pickle
-# gestion des chemins 
+# gestion des chemins
 from pathlib import Path
 sys.path.insert(0, './src/')
+
+
+
 
 cwd = os.getcwd()
 # import des fonctions de modélisations
 import modeling_functions as mf
 
 # page parameters
-st.set_page_config(
-    layout="wide",
-)
+st.set_page_config(page_title = 'MeteoStralia',
+                   layout = 'wide',
+                   page_icon = emoji.emojize('🦘'))
 
 # classifier
 classifier_list = {
     'LogisticRegression': LogisticRegression(
         class_weight={0: 0.3, 1: 0.7},
         C = 0.1,
-        max_iter = 500, 
-        penalty='l1', 
+        max_iter = 500,
+        penalty='l1',
         solver = 'liblinear',
         n_jobs=-1),
     'RandomForestClassifier': RandomForestClassifier(
-        class_weight={0: 0.3, 1: 0.7}, 
+        class_weight={0: 0.3, 1: 0.7},
         criterion='log_loss',
-        max_depth=10, 
+        max_depth=10,
         n_estimators=50,
         n_jobs=-1),
     'BalancedRandomForestClassifier': BalancedRandomForestClassifier(
         class_weight={0: 0.1, 1: 0.9},
-        criterion='entropy', 
+        criterion='entropy',
         max_depth=30,
-        n_estimators=200, 
+        n_estimators=200,
         n_jobs=-1),
     'BaggingClassifier': BaggingClassifier(
         max_features=1.0,
-        max_samples=0.5, 
+        max_samples=0.5,
         n_estimators=1000,
          n_jobs=-1),
     'BalancedBaggingClassifier': BalancedBaggingClassifier(
-        max_features=1.0, 
-        max_samples=0.5, 
+        max_features=1.0,
+        max_samples=0.5,
         n_estimators=1000,
          n_jobs=-1),
     'LinearSVC' : LinearSVC(
-        max_iter=500, 
+        max_iter=500,
         class_weight={0: 0.3, 1: 0.7},
         penalty='l1')
 }
@@ -78,7 +84,7 @@ classifier_list = {
 # métriques de grid_search
 grid_metric_list = {"accuracy" : make_scorer(accuracy_score),
                 "average_precision" : make_scorer(average_precision_score),
-                "f1_score" : make_scorer(f1_score), 
+                "f1_score" : make_scorer(f1_score),
                 "f05_score" : make_scorer(fbeta_score, beta=0.5, pos_label=1),
                 "f2_score" : make_scorer(fbeta_score, beta=2, pos_label=1)}
 
@@ -114,22 +120,22 @@ with model1_col:
 
     if dataset_choice1 == "V2 : Original dataset":
         # st.write("WARNING :  La multicolinéarité n'est pas traitée dans ces données")
-        df =  pd.read_csv("./data_saved/data_preprocessed_V2.csv", 
+        df =  pd.read_csv("./data_saved/data_preprocessed_V2.csv",
                         index_col=["id_Location","id_Date"])
         dataset = "V2t"
 
     elif dataset_choice1 == "V3 : New variables (daily growth rate, rolling mean)":
-        df =  pd.read_csv("./data_saved/data_preprocessed_V3.csv", 
+        df =  pd.read_csv("./data_saved/data_preprocessed_V3.csv",
                         index_col=["id_Location","id_Date"])
         dataset = "V3t"
 
     elif dataset_choice1 == "V4 : New data addition":
-        df =  pd.read_csv("./data_saved/data_preprocessed_V4.csv", 
+        df =  pd.read_csv("./data_saved/data_preprocessed_V4.csv",
                         index_col=["id_Location","id_Date"])
         dataset = "V4t"
 
     elif dataset_choice1 == "V5 : New variables + New data":
-        df =  pd.read_csv("./data_saved/data_preprocessed_V5.csv", 
+        df =  pd.read_csv("./data_saved/data_preprocessed_V5.csv",
                         index_col=["id_Location","id_Date"])
         dataset = "V4t"
 
@@ -148,7 +154,7 @@ with model1_col:
         X_train, X_test = mf.scaling(X_train, X_test, scaler = MinMaxScaler())
 
         # Choix du classificateur
-        clf_choice1 = st.selectbox('Choose your ML classifier', classifier_list.keys(), 
+        clf_choice1 = st.selectbox('Choose your ML classifier', classifier_list.keys(),
                                 index=None)
 
         #st.write('Le modèle choisi est :', clf_choice1)
@@ -156,25 +162,25 @@ with model1_col:
         # Choix entre chargement de paramètres optimisés ou réentrainement
 
         optim_col1, train_col1 = st.columns(2, border = True)
-            
+
         with optim_col1:
             optim_choice1 = st.checkbox("Tuned parameters from gridsearch")
-        
+
         with train_col1:
             train_choice1 = st.checkbox('New training')
 
-        if optim_choice1: 
+        if optim_choice1:
             grid_metric_choice1 = st.selectbox('Choose the gridsearch scoring metric',
                                             grid_metric_list, index=None)
-            
+
             modeling_batch = "simplegrid"
-            
+
             if grid_metric_choice1:
                 # Chargement du modèle correspondant
                 model_dir = "./saved_models/global/" + dataset + "/" + modeling_batch + "/"
-                
+
                 check_model_exist1 = Path(model_dir + grid_metric_choice1 + clf_choice1 + "search.pkl").exists()
-                
+
                 if check_model_exist1:
                     st.write("Model loading from folder :", model_dir + grid_metric_choice1 + clf_choice1 + "search.pkl")
 
@@ -188,13 +194,13 @@ with model1_col:
 
                     st.write("Model Parameters : \n ", model1)
                     model1_loaded = True
-                
-                else: 
+
+                else:
                     st.write("No model at :", model_dir + grid_metric_choice1 + clf_choice1 + "search.pkl")
                     parameters_choice1 = st.selectbox('Choose your parameters ', 'Default parameters', index = None)
                     model1 = classifier_list[clf_choice1]
                     if parameters_choice1:
-                        st.write("The selected model will be trained with the following parameters : \n ", model1) 
+                        st.write("The selected model will be trained with the following parameters : \n ", model1)
                         model1.fit(X_train, y_train)
                         model1_loaded = True
 
@@ -202,7 +208,7 @@ with model1_col:
             parameters_choice1 = st.selectbox('Choose your parameters ', 'Default parameters', index = None)
             model1 = classifier_list[clf_choice1]
             if parameters_choice1:
-                st.write("The selected model will be trained with the following parameters : \n ", model1) 
+                st.write("The selected model will be trained with the following parameters : \n ", model1)
                 model1.fit(X_train, y_train)
                 model1_loaded = True
 
@@ -214,23 +220,23 @@ with model1_col:
             # prédictions
 
             y_pred = model1.predict(X_test)
-            
+
 
             st.write("Choose the results to print")
 
             inter_col, cm_col, report_col = st.columns(3, border = True)
 
-            with inter_col : 
+            with inter_col :
                 inter_choice = st.checkbox("Interpretability plot")
-            with cm_col : 
+            with cm_col :
                 cm_choice = st.checkbox("Confusion matrix")
-            with report_col : 
+            with report_col :
                 report_choice = st.checkbox("Metrics")
 
             if inter_choice:
-                n_feat = st.slider('Number of features', 
-                                min_value = 1, 
-                                max_value = len(X_train.columns), 
+                n_feat = st.slider('Number of features',
+                                min_value = 1,
+                                max_value = len(X_train.columns),
                                 value = 10)
             else:
                 n_feat=10
@@ -239,13 +245,13 @@ with model1_col:
 
                 report, cm, plot_res = mf.st_plot_model_results(
                     model_name = clf_choice1, model= model1,
-                    X_train = X_train, X_test = X_test, 
+                    X_train = X_train, X_test = X_test,
                     y_train = y_train, y_test =y_test,
                     plot_inter = inter_choice,
                     plot_cm = cm_choice,
                     plot_report = report_choice,
                     n_coef_graph=n_feat,
-                    )    
+                    )
                 # st.dataframe(report)
                 st.pyplot(plot_res)
 
@@ -254,9 +260,9 @@ with model1_col:
 
                 st.write("Choose a deepening")
                 seuil_col, location_col = st.columns(2, border = True)
-                with seuil_col: 
+                with seuil_col:
                     seuil_choice = st.checkbox("Classification treshold")
-                with location_col: 
+                with location_col:
                     location_choice = st.checkbox("Forecast by weather station")
 
                 if location_choice:
@@ -271,19 +277,19 @@ with model1_col:
                     seuil_plot, metric_plot = mf.st_plot_seuil_roc_AUC(
                         model1,
                         X_train, X_test, y_train, y_test)
-                    
+
                     st.pyplot(seuil_plot)
                     st.pyplot(metric_plot)
 
                     threshold = st.slider("Treshold adjustment", 0.0, 1.0, value = 0.2, step=0.1)
                     adjust_report, cm_avant, cm_apres = mf.adjust_classification_treshold(model1,
-                                        X_train, X_test, y_train, y_test,  
+                                        X_train, X_test, y_train, y_test,
                                         threshold)
                     col1, col2 = st.columns(2, border = False)
-                    with col1:     
+                    with col1:
                         st.dataframe(adjust_report.iloc[:,0])
                         st.dataframe(cm_avant)
-                    with col2:     
+                    with col2:
                         st.dataframe(adjust_report.iloc[:,1])
                         st.dataframe(cm_apres)
 
@@ -303,7 +309,7 @@ with model1_col:
                         date1 = st.date_input(label = 'Select a Date',
                                         help = 'year-month-day',
                                         value = date1)
-                    
+
                 if city and date1:
                     datetomorrow1 = str(date1 + datetime.timedelta(days=1))
                     date1 = str(date1)
@@ -316,7 +322,7 @@ with model1_col:
                     if pred1 == 0:
                         st.write("No rain on the ",datetomorrow1, " at ", city)
                         st.write("Probability : ", str(round(prob1[0,0]*100, ndigits=0)), "%")
-                    
+
                     y_true1 = y_test.loc[(city, date1),]
                     if  y_true1 == 1.0:
                         st.write("In reality, it rained at  ", city, " on the ", datetomorrow1)
@@ -337,22 +343,22 @@ with model2_col:
 
     if dataset_choice2 == "V2 : Original dataset":
         # st.write("WARNING :  La multicolinéarité n'est pas traitée dans ces données")
-        df2 =  pd.read_csv("./data_saved/data_preprocessed_V2.csv", 
+        df2 =  pd.read_csv("./data_saved/data_preprocessed_V2.csv",
                         index_col=["id_Location","id_Date"])
         dataset2 = "V2t"
 
     elif dataset_choice2 == "V3 : New variables (daily growth rate, rolling mean)":
-        df2 =  pd.read_csv("./data_saved/data_preprocessed_V3.csv", 
+        df2 =  pd.read_csv("./data_saved/data_preprocessed_V3.csv",
                         index_col=["id_Location","id_Date"])
         dataset2 = "V3t"
 
     elif dataset_choice2 == "V4 : New data addition":
-        df2 =  pd.read_csv("./data_saved/data_preprocessed_V4.csv", 
+        df2 =  pd.read_csv("./data_saved/data_preprocessed_V4.csv",
                         index_col=["id_Location","id_Date"])
         dataset2 = "V4t"
 
     elif dataset_choice2 == "V5 : New variables + New data":
-        df2 =  pd.read_csv("./data_saved/data_preprocessed_V5.csv", 
+        df2 =  pd.read_csv("./data_saved/data_preprocessed_V5.csv",
                         index_col=["id_Location","id_Date"])
         dataset2 = "V5t"
 
@@ -371,7 +377,7 @@ with model2_col:
         X_train2, X_test2 = mf.scaling(X_train2, X_test2, scaler = MinMaxScaler())
 
         # Choix du classificateur
-        clf_choice2 = st.selectbox('Choose your ML classifier', classifier_list.keys(), 
+        clf_choice2 = st.selectbox('Choose your ML classifier', classifier_list.keys(),
                                 index=None, key="m22")
 
         #st.write('Le modèle choisi est :', clf_choice1)
@@ -379,25 +385,25 @@ with model2_col:
         # Choix entre chargement de paramètres optimisés ou réentrainement
 
         optim_col2, train_col2 = st.columns(2, border = True)
-            
+
         with optim_col2:
             optim_choice2 = st.checkbox("Tuned parameters from gridsearch", key="m23")
-        
+
         with train_col2:
             train_choice2 = st.checkbox('New training', key="m24")
 
-        if optim_choice2: 
+        if optim_choice2:
             grid_metric_choice2 = st.selectbox('Choose the gridsearch scoring metric',
                                             grid_metric_list, index=None, key="m25")
-            
+
             modeling_batch = "simplegrid"
-            
+
             if grid_metric_choice2:
                 # Chargement du modèle correspondant
                 model_dir2 = "./saved_models/global/" + dataset2 + "/" + modeling_batch + "/"
-                
+
                 check_model_exist2 = Path(model_dir2 + grid_metric_choice2 + clf_choice2 + "search.pkl").exists()
-                
+
                 if check_model_exist2:
                     st.write("Model loading from folder :", model_dir2 + grid_metric_choice2 + clf_choice2 + "search.pkl")
 
@@ -411,13 +417,13 @@ with model2_col:
 
                     st.write("Model Parameters : \n ", model2)
                     model2_loaded = True
-                
-                else: 
+
+                else:
                     st.write("No model at :", model_dir2 + grid_metric_choice2 + clf_choice2 + "search.pkl")
                     parameters_choice2 = st.selectbox('Choose your parameters ', 'Default parameters', index = None)
                     model2 = classifier_list[clf_choice2]
                     if parameters_choice2:
-                        st.write("The selected model will be trained with the following parameters : \n ", model2) 
+                        st.write("The selected model will be trained with the following parameters : \n ", model2)
                         model2.fit(X_train2, y_train2)
                         model2_loaded = True
 
@@ -425,7 +431,7 @@ with model2_col:
             parameters_choice2 = st.selectbox('Choose your parameters ', 'Default parameters', index = None, key="m26")
             model2 = classifier_list[clf_choice2]
             if parameters_choice2:
-                st.write("The selected model will be trained with the following parameters : \n ", model2) 
+                st.write("The selected model will be trained with the following parameters : \n ", model2)
                 model2.fit(X_train2, y_train2)
                 model2_loaded = True
 
@@ -438,23 +444,23 @@ with model2_col:
             # prédictions
 
             y_pred2 = model2.predict(X_test2)
-            
+
 
             st.write("Choose the results to print")
 
             inter_col2, cm_col2, report_col2 = st.columns(3, border = True)
 
-            with inter_col2 : 
+            with inter_col2 :
                 inter_choice2 = st.checkbox("Interpretability plot", key="m27")
-            with cm_col2 : 
+            with cm_col2 :
                 cm_choice2 = st.checkbox("Confusion matrix", key="m28")
-            with report_col2 : 
+            with report_col2 :
                 report_choice2 = st.checkbox("Metrics", key="m214")
 
             if inter_choice2:
-                n_feat2 = st.slider('Number of features', 
-                                min_value = 1, 
-                                max_value = len(X_train2.columns), 
+                n_feat2 = st.slider('Number of features',
+                                min_value = 1,
+                                max_value = len(X_train2.columns),
                                 value = 10, key="m217")
             else:
                 n_feat2=10
@@ -463,21 +469,21 @@ with model2_col:
 
                 report2, cm2, plot_res2 = mf.st_plot_model_results(
                     model_name = clf_choice2, model= model2,
-                    X_train = X_train2, X_test = X_test2, 
+                    X_train = X_train2, X_test = X_test2,
                     y_train = y_train2, y_test =y_test2,
                     plot_inter = inter_choice2,
                     plot_cm = cm_choice2,
                     plot_report = report_choice2,
                     n_coef_graph=n_feat2,
-                    )    
+                    )
                 # st.dataframe(report)
                 st.pyplot(plot_res2)
 
                 st.write("Choose a deepening")
                 seuil_col2, location_col2 = st.columns(2, border = True)
-                with seuil_col2: 
+                with seuil_col2:
                     seuil_choice2 = st.checkbox("Classification treshold", key="m29")
-                with location_col2: 
+                with location_col2:
                     location_choice2 = st.checkbox("Forecast by weather station", key="m210")
 
                 if location_choice2:
@@ -492,19 +498,19 @@ with model2_col:
                     seuil_plot2, metric_plot2 = mf.st_plot_seuil_roc_AUC(
                         model2,
                         X_train2, X_test2, y_train2, y_test2)
-                    
+
                     st.pyplot(seuil_plot2)
                     st.pyplot(metric_plot2)
 
                     threshold2 = st.slider("Treshold adjustment", 0.0, 1.0, value = 0.2, step=0.1, key="m211")
                     adjust_report2, cm_avant2, cm_apres2 = mf.adjust_classification_treshold(model2,
-                                        X_train2, X_test2, y_train2, y_test2,  
+                                        X_train2, X_test2, y_train2, y_test2,
                                         threshold2)
                     col3, col4 = st.columns(2, border = False)
-                    with col3:     
+                    with col3:
                         st.dataframe(adjust_report2.iloc[:,0])
                         st.dataframe(cm_avant2)
-                    with col4:     
+                    with col4:
                         st.dataframe(adjust_report2.iloc[:,1])
                         st.dataframe(cm_apres2)
 
@@ -524,9 +530,9 @@ with model2_col:
                     with time2:
                         date2 = st.date_input(label = 'Select a Date',
                                         help = 'year-month-day',
-                                        value = date2, 
+                                        value = date2,
                                         key="m213")
-                    
+
                 if city2 and date2:
                     datetomorrow2 = str(date2 + datetime.timedelta(days=1))
                     date2 = str(date2)
@@ -539,7 +545,7 @@ with model2_col:
                     if pred2 == 0:
                         st.write("No rain on the ",datetomorrow2, " à ", city2)
                         st.write("Probability : ", str(round(prob2[0,0]*100, ndigits=0)), "%")
-                    
+
                     y_true2 = y_test2.loc[(city2, date2),]
                     if  y_true2 == 1.0:
                         st.write("In reality, it rained at  ", city2, " on the ", datetomorrow2)
@@ -547,4 +553,3 @@ with model2_col:
                     if  y_true2 == 0.0:
                         st.write("In reality, it rained at  ", city2, " on the ", datetomorrow2)
                         st.write("It rained ", str(df2.loc[(city2, datetomorrow2),"Rainfall"]), " mm")
-

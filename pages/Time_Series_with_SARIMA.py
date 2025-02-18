@@ -22,7 +22,7 @@ df = pd.read_csv(url)
 
 st.set_page_config(page_title="MeteoStralia",
                    layout="wide",
-                   page_icon=emoji.emojize(":thumbs_up:"))
+                   page_icon = emoji.emojize('🦘'))
 
 with st.container():
 
@@ -128,12 +128,12 @@ if city and var_to_study:
         </style>
 
         <div class="custom-box">
-        Autocorrelation and partial autocorrelation graphs help to understand the properties of time series 
+        Autocorrelation and partial autocorrelation graphs help to understand the properties of time series
         and to determine the appropriate parameters for SARIMA Model :
         </div>
     """, unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
-    lags = 50 
+    lags = 50
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5), facecolor="none")
     plot_acf(train, lags=lags, ax=ax1, color="dodgerblue")
     plot_pacf(train, lags=lags, ax=ax2, color="dodgerblue")
@@ -171,10 +171,10 @@ if city and var_to_study:
         </div>
     """, unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
-    st.code(""" 
-            sarima_model = SARIMAX(train, 
+    st.code("""
+            sarima_model = SARIMAX(train,
                                    exog = train_features,              # Include exogenous variables that may influence the target variable
-                                   order = (1, 1, 1), 
+                                   order = (1, 1, 1),
                                    seasonal_order = (1, 1, 1, 12),     # 12 for annual seasonality
                                    enforce_stationarity = False,       # Accept non-stationary series
                                    enforce_invertibility = False)
@@ -220,9 +220,9 @@ if city and var_to_study:
     ax.plot(test.index, predictions, label="Predictions", color="red", linestyle="dotted", linewidth=0.7)
     ax.set_xlabel("Date", color="black")
     ax.set_ylabel(f"{var_to_study}", color="black")
-    ax.legend(labelcolor="black", frameon=False) 
+    ax.legend(labelcolor="black", frameon=False)
     ax.set_facecolor("none")
-    fig.patch.set_alpha(0) 
+    fig.patch.set_alpha(0)
     ax.spines["bottom"].set_color("black")
     ax.spines["top"].set_color("black")
     ax.spines["left"].set_color("black")
