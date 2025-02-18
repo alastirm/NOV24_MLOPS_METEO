@@ -25,11 +25,23 @@ st.set_page_config(page_title = 'MeteoStralia',
                    layout = 'wide',
                    page_icon = emoji.emojize('🦘'))
 
-st.html("""
-        <h1 style = "color : rgb(16, 0, 97); font-size : 200%;">Location Prediction </h1>
-        <h4 style = 'color : rgb(156, 4, 4);'>5 days rain prediction </h4>
-    </div>
-""")
+
+
+with st.container(border = False):
+
+    page_title, logo = st.columns([2, 1], border = False)
+
+    with page_title :
+
+        st.html("""
+                <h1 style = "color : rgb(16, 0, 97); font-size : 200%;">Location Prediction </h1>
+                <h4 style = 'color : rgb(156, 4, 4);'>5 days rain prediction </h4>
+            </div>
+        """)
+
+    with logo :
+
+        st.image('image/logo.png', width = 150)
 
 with st.container(border = False):
 

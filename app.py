@@ -190,4 +190,19 @@ with st.container(border = False):
 
 
 
-# st.image('image/kangourou.png', caption='Kangourou Uluru', use_column_width=True)
+with st.container(border = False):
+
+    title_bottom, image_bottom = st.columns([2, 1], border = False)
+
+    with title_bottom:
+        st.html("""
+            <div class="header" style = 'margin-top : -50px; justify-items : center; align-items : top; margin-bottom : 50px'>
+                <h1 style = "color : rgb(16, 0, 97); font-size : 550%; height : 50px;">MeteoStralia </h1>
+            </div>
+        """)
+
+    with image_bottom:
+
+        st.markdown('<div class = "image">', unsafe_allow_html = True)
+        st.image('image/logo.png', use_container_width = True)
+        st.markdown('</div>', unsafe_allow_html = True)
