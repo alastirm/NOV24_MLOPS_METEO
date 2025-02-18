@@ -700,8 +700,8 @@ if city :
             fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['Humidity3pm'], line = dict(color = 'rgb(16, 0, 97)', width = 4)))
             fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['Pressure9am'], line = dict(color = 'rgb(156, 4, 4)', width = 4)))
             fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['Pressure3pm'], line = dict(color = 'rgb(16, 0, 97)', width = 4)))
-            fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['Cloud9am'], line = dict(color = 'rgb(156, 4, 4)', width = 4)))
-            fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['Cloud3pm'], line = dict(color = 'rgb(16, 0, 97)', width = 4)))
+            # fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['Cloud9am'], line = dict(color = 'rgb(156, 4, 4)', width = 4)))
+            # fig.add_trace(go.Line(x = cible_graph.index, y = cible_graph['Cloud3pm'], line = dict(color = 'rgb(16, 0, 97)', width = 4)))
 
 # WindGustDir
 # WindDir9am
