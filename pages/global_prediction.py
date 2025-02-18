@@ -8,6 +8,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import datetime
+import emoji
 
 # modèles
 from sklearn.linear_model import LogisticRegression
@@ -47,21 +48,21 @@ st.set_page_config(page_title = 'MeteoStralia',
 # classifier
 classifier_list = {
     'LogisticRegression': LogisticRegression(
-        class_weight={0: 0.3, 1: 0.7},
-        C = 0.1,
-        max_iter = 500,
-        penalty='l1',
+#        class_weight={0: 0.3, 1: 0.7},
+        C = 1,
+        max_iter = 500, 
+        penalty='l1', 
         solver = 'liblinear',
         n_jobs=-1),
     'RandomForestClassifier': RandomForestClassifier(
-        class_weight={0: 0.3, 1: 0.7},
+#        class_weight={0: 0.3, 1: 0.7}, 
         criterion='log_loss',
         max_depth=10,
         n_estimators=50,
         n_jobs=-1),
     'BalancedRandomForestClassifier': BalancedRandomForestClassifier(
-        class_weight={0: 0.1, 1: 0.9},
-        criterion='entropy',
+#        class_weight={0: 0.1, 1: 0.9},
+        criterion='entropy', 
         max_depth=30,
         n_estimators=200,
         n_jobs=-1),
@@ -76,8 +77,8 @@ classifier_list = {
         n_estimators=1000,
          n_jobs=-1),
     'LinearSVC' : LinearSVC(
-        max_iter=500,
-        class_weight={0: 0.3, 1: 0.7},
+        max_iter=500, 
+#        class_weight={0: 0.3, 1: 0.7},
         penalty='l1')
 }
 
@@ -102,10 +103,16 @@ threshold = 0.25
 
 model1_loaded = False
 model2_loaded = False
+check_model_exist1 = False
+check_model_exist2 = False
 
 # début stream lit
-st.title("Model comparator on the whole dataset")
-
+#st.title("Model comparator on the whole dataset")
+st.html("""
+        <h1 style = "color : rgb(16, 0, 97); font-size : 200%;">Model comparator on the whole dataset</h1>
+    </div>
+""")
+        
 model1_col, model2_col = st.columns(2, border = True)
 
 ##############################
@@ -154,7 +161,7 @@ with model1_col:
         X_train, X_test = mf.scaling(X_train, X_test, scaler = MinMaxScaler())
 
         # Choix du classificateur
-        clf_choice1 = st.selectbox('Choose your ML classifier', classifier_list.keys(),
+        clf_choice1 = st.selectbox('Select your ML classifier', classifier_list.keys(), 
                                 index=None)
 
         #st.write('Le modèle choisi est :', clf_choice1)
@@ -169,8 +176,8 @@ with model1_col:
         with train_col1:
             train_choice1 = st.checkbox('New training')
 
-        if optim_choice1:
-            grid_metric_choice1 = st.selectbox('Choose the gridsearch scoring metric',
+        if optim_choice1: 
+            grid_metric_choice1 = st.selectbox('Select the gridsearch scoring metric',
                                             grid_metric_list, index=None)
 
             modeling_batch = "simplegrid"
@@ -197,7 +204,7 @@ with model1_col:
 
                 else:
                     st.write("No model at :", model_dir + grid_metric_choice1 + clf_choice1 + "search.pkl")
-                    parameters_choice1 = st.selectbox('Choose your parameters ', 'Default parameters', index = None)
+                    parameters_choice1 = st.selectbox('Select your parameters ', 'Default parameters', index = None)
                     model1 = classifier_list[clf_choice1]
                     if parameters_choice1:
                         st.write("The selected model will be trained with the following parameters : \n ", model1)
@@ -205,12 +212,21 @@ with model1_col:
                         model1_loaded = True
 
         elif train_choice1:
-            parameters_choice1 = st.selectbox('Choose your parameters ', 'Default parameters', index = None)
+            parameters_choice1 = st.selectbox('Select your parameters ', 'Default parameters', index = None)
             model1 = classifier_list[clf_choice1]
             if parameters_choice1:
-                st.write("The selected model will be trained with the following parameters : \n ", model1)
-                model1.fit(X_train, y_train)
-                model1_loaded = True
+                modeling_batch = "livetrain"
+                model_train_dir1 = "./saved_models/global/" + dataset + "/" + modeling_batch + "/"
+                check_model_train_exist1 = Path(model_train_dir1 + clf_choice1 + ".pkl").exists()
+                if check_model_train_exist1:
+                    st.write("Model already exists. Loading it from folder :", model_train_dir1 + clf_choice1 + ".pkl")
+                    with open(cwd+ model_train_dir1 +clf_choice1 +".pkl", 'rb') as m:
+                        model1 = pickle.load(m)
+                    model1_loaded = True
+                else:
+                    st.write("The selected model will be trained with the following parameters : \n ", model1) 
+                    model1.fit(X_train, y_train)
+                    model1_loaded = True
 
 ##############################
 # Résultats premier modèle
@@ -222,7 +238,7 @@ with model1_col:
             y_pred = model1.predict(X_test)
 
 
-            st.write("Choose the results to print")
+            st.write("Select the results to print")
 
             inter_col, cm_col, report_col = st.columns(3, border = True)
 
@@ -255,10 +271,24 @@ with model1_col:
                 # st.dataframe(report)
                 st.pyplot(plot_res)
 
+                if train_choice1 or check_model_exist1==False:
+                        st.write("Do you want to save this model with pickle?")
+                    
+                        save_model1 = st.checkbox("Save the model", key="m231")
+                        # timestampnow = pd.Timestamp(datetime.datetime.now()).round(freq='min').timestamp()
+                        # timestampnow = round(timestampnow,ndigits=0)
+                        # pd.to_datetime(timestampnow, unit = "s")
+                        if save_model1:
+                            modeling_batch = "livetrain"
+                            model_dir1 = "./saved_models/global/" + dataset + "/" + modeling_batch + "/"
+                            os.makedirs(os.path.dirname(model_dir1), exist_ok=True)
+                            with open(cwd + model_dir1  + clf_choice1 + ".pkl", 'wb') as m:
+                                    pickle.dump(model1,m)
+
             # proba
             # y_probs = model.predict_proba(X_test)
 
-                st.write("Choose a deepening")
+                st.write("Select more criteria to deepen the results")
                 seuil_col, location_col = st.columns(2, border = True)
                 with seuil_col:
                     seuil_choice = st.checkbox("Classification treshold")
@@ -293,10 +323,10 @@ with model1_col:
                         st.dataframe(adjust_report.iloc[:,1])
                         st.dataframe(cm_apres)
 
-                st.write("Let's try a forecast?")
+                st.write("Do you want to make a forecast?")
                 location1, time1 = st.columns(2, border = True)
                 with location1:
-                    city = st.selectbox(label = 'Choose a city',
+                    city = st.selectbox(label = 'Select a city',
                                 options = sorted(df.index.get_level_values(0).unique()),
                                 index = None,
                                 label_visibility="visible",
@@ -377,7 +407,7 @@ with model2_col:
         X_train2, X_test2 = mf.scaling(X_train2, X_test2, scaler = MinMaxScaler())
 
         # Choix du classificateur
-        clf_choice2 = st.selectbox('Choose your ML classifier', classifier_list.keys(),
+        clf_choice2 = st.selectbox('Select your ML classifier', classifier_list.keys(), 
                                 index=None, key="m22")
 
         #st.write('Le modèle choisi est :', clf_choice1)
@@ -392,8 +422,8 @@ with model2_col:
         with train_col2:
             train_choice2 = st.checkbox('New training', key="m24")
 
-        if optim_choice2:
-            grid_metric_choice2 = st.selectbox('Choose the gridsearch scoring metric',
+        if optim_choice2: 
+            grid_metric_choice2 = st.selectbox('Select the gridsearch scoring metric',
                                             grid_metric_list, index=None, key="m25")
 
             modeling_batch = "simplegrid"
@@ -420,7 +450,7 @@ with model2_col:
 
                 else:
                     st.write("No model at :", model_dir2 + grid_metric_choice2 + clf_choice2 + "search.pkl")
-                    parameters_choice2 = st.selectbox('Choose your parameters ', 'Default parameters', index = None)
+                    parameters_choice2 = st.selectbox('Select your parameters ', 'Default parameters', index = None)
                     model2 = classifier_list[clf_choice2]
                     if parameters_choice2:
                         st.write("The selected model will be trained with the following parameters : \n ", model2)
@@ -428,12 +458,21 @@ with model2_col:
                         model2_loaded = True
 
         elif train_choice2:
-            parameters_choice2 = st.selectbox('Choose your parameters ', 'Default parameters', index = None, key="m26")
+            parameters_choice2 = st.selectbox('Select your parameters ', 'Default parameters', index = None, key="m26")
             model2 = classifier_list[clf_choice2]
             if parameters_choice2:
-                st.write("The selected model will be trained with the following parameters : \n ", model2)
-                model2.fit(X_train2, y_train2)
-                model2_loaded = True
+                modeling_batch = "livetrain"
+                model_train_dir2 = "./saved_models/global/" + dataset2 + "/" + modeling_batch + "/"
+                check_model_train_exist2 = Path(model_train_dir2 + clf_choice2 + ".pkl").exists()
+                if check_model_train_exist2:
+                    st.write("Model already exists. Loading it from folder :", model_train_dir2 + clf_choice2 + ".pkl")
+                    with open(cwd+ model_train_dir2 +clf_choice2 +".pkl", 'rb') as m:
+                        model2 = pickle.load(m)
+                    model2_loaded = True
+                else:
+                    st.write("The selected model will be trained with the following parameters : \n ", model2) 
+                    model2.fit(X_train2, y_train2)
+                    model2_loaded = True
 
 
 ##############################
@@ -446,7 +485,7 @@ with model2_col:
             y_pred2 = model2.predict(X_test2)
 
 
-            st.write("Choose the results to print")
+            st.write("Select the results to print")
 
             inter_col2, cm_col2, report_col2 = st.columns(3, border = True)
 
@@ -479,7 +518,22 @@ with model2_col:
                 # st.dataframe(report)
                 st.pyplot(plot_res2)
 
-                st.write("Choose a deepening")
+                if train_choice2 or check_model_exist2==False:
+                    st.write("Do you want to save this model with pickle?")
+                
+                    save_model2 = st.checkbox("Save the model", key="m230")
+                    # timestampnow = pd.Timestamp(datetime.datetime.now()).round(freq='min').timestamp()
+                    # timestampnow = round(timestampnow,ndigits=0)
+                    # pd.to_datetime(timestampnow, unit = "s")
+                    if save_model2:
+                        modeling_batch = "livetrain"
+                        model_dir2 = "./saved_models/global/" + dataset2 + "/" + modeling_batch + "/"
+                        os.makedirs(os.path.dirname(model_dir2), exist_ok=True)
+                        with open(cwd + model_dir2  + clf_choice2 + ".pkl", 'wb') as m:
+                                pickle.dump(model2,m)
+
+
+                st.write("Select more criteria to deepen the results")
                 seuil_col2, location_col2 = st.columns(2, border = True)
                 with seuil_col2:
                     seuil_choice2 = st.checkbox("Classification treshold", key="m29")
@@ -514,10 +568,10 @@ with model2_col:
                         st.dataframe(adjust_report2.iloc[:,1])
                         st.dataframe(cm_apres2)
 
-                st.write("Let's try a forecast?")
+                st.write("Do you want to make a forecast?")
                 location2, time2 = st.columns(2, border = True)
                 with location2:
-                    city2 = st.selectbox(label = 'Choose a city',
+                    city2 = st.selectbox(label = 'Select a city',
                                 options = sorted(df2.index.get_level_values(0).unique()),
                                 index = None,
                                 label_visibility="visible",
