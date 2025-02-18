@@ -71,7 +71,7 @@ if city and var_to_study:
     st.markdown("""
         <style>
         .custom-box {
-            background-color: #280137;
+            background-color: #c1c6fc;
             padding: 10px;
             border-radius: 5px;
             border: none;
@@ -84,10 +84,10 @@ if city and var_to_study:
         </div>
     """, unsafe_allow_html=True)
     result = seasonal_decompose(city_data[var_to_study], model="additive", period=365)
-    trace_original = go.Scatter(x=result.observed.index, y=result.observed, mode="lines", name="Original", line=dict(color="silver", width=1))
-    trace_trend = go.Scatter(x=result.trend.index, y=result.trend, mode="lines", name="Trend", line=dict(color="lightcyan", width=1))
-    trace_seasonal = go.Scatter(x=result.seasonal.index, y=result.seasonal, mode="lines", name="Seasonal", line=dict(color="ivory", width=1))
-    trace_resid = go.Scatter(x=result.resid.index, y=result.resid, mode="markers", name="Residual", marker=dict(color="mistyrose", size=5))
+    trace_original = go.Scatter(x=result.observed.index, y=result.observed, mode="lines", name="Original", line=dict(color="gray", width=1))
+    trace_trend = go.Scatter(x=result.trend.index, y=result.trend, mode="lines", name="Trend", line=dict(color="darkolivegreen", width=1))
+    trace_seasonal = go.Scatter(x=result.seasonal.index, y=result.seasonal, mode="lines", name="Seasonal", line=dict(color="olivedrab", width=1))
+    trace_resid = go.Scatter(x=result.resid.index, y=result.resid, mode="markers", name="Residual", marker=dict(color="yellowgreen", size=5))
     fig = sp.make_subplots(
         rows=4, cols=1,
         subplot_titles=("Original", "Trend", "Seasonal", "Residual"),
@@ -119,7 +119,7 @@ if city and var_to_study:
     st.markdown("""
         <style>
         .custom-box {
-            background-color: #280137;
+            background-color: #c1c6fc;
             padding: 10px;
             border-radius: 5px;
             border: none;
@@ -135,19 +135,19 @@ if city and var_to_study:
     st.markdown("<br>", unsafe_allow_html=True)
     lags = 50 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5), facecolor="none")
-    plot_acf(train, lags=lags, ax=ax1, color="lightskyblue")
-    plot_pacf(train, lags=lags, ax=ax2, color="lightskyblue")
-    ax1.set_title("ACF", fontsize=12, color="white")
-    ax2.set_title("PACF", fontsize=12, color="white")
+    plot_acf(train, lags=lags, ax=ax1, color="dodgerblue")
+    plot_pacf(train, lags=lags, ax=ax2, color="dodgerblue")
+    ax1.set_title("ACF", fontsize=12, color="black")
+    ax2.set_title("PACF", fontsize=12, color="black")
     ax1.set_facecolor("none")
     ax2.set_facecolor("none")
     for ax in [ax1, ax2]:
-        ax.spines["bottom"].set_color("white")
-        ax.spines["top"].set_color("white")
-        ax.spines["left"].set_color("white")
-        ax.spines["right"].set_color("white")
-        ax.tick_params(axis="x", colors="white")
-        ax.tick_params(axis="y", colors="white")
+        ax.spines["bottom"].set_color("black")
+        ax.spines["top"].set_color("black")
+        ax.spines["left"].set_color("black")
+        ax.spines["right"].set_color("black")
+        ax.tick_params(axis="x", colors="black")
+        ax.tick_params(axis="y", colors="black")
     fig.patch.set_alpha(0)
     st.pyplot(fig)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -158,7 +158,7 @@ if city and var_to_study:
     st.markdown("""
         <style>
         .custom-box {
-            background-color: #280137;
+            background-color: #c1c6fc;
             padding: 10px;
             border-radius: 5px;
             border: none;
@@ -201,7 +201,7 @@ if city and var_to_study:
     st.markdown("""
         <style>
         .custom-box {
-            background-color: #280137;
+            background-color: #c1c6fc;
             padding: 10px;
             border-radius: 5px;
             border: none;
@@ -215,20 +215,20 @@ if city and var_to_study:
     """, unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
     fig, ax = plt.subplots(figsize=(15, 5), facecolor="none")
-    ax.plot(train.index, train, label="Train", color="darkgrey", linewidth=0.7)
-    ax.plot(test.index, test, label="Test", color="white", linewidth=0.7)
+    ax.plot(train.index, train, label="Train", color="black", linewidth=0.7)
+    ax.plot(test.index, test, label="Test", color="gray", linewidth=0.7)
     ax.plot(test.index, predictions, label="Predictions", color="red", linestyle="dotted", linewidth=0.7)
-    ax.set_xlabel("Date", color="white")
-    ax.set_ylabel(f"{var_to_study}", color="white")
-    ax.legend(labelcolor="white", frameon=False) 
+    ax.set_xlabel("Date", color="black")
+    ax.set_ylabel(f"{var_to_study}", color="black")
+    ax.legend(labelcolor="black", frameon=False) 
     ax.set_facecolor("none")
     fig.patch.set_alpha(0) 
-    ax.spines["bottom"].set_color("white")
-    ax.spines["top"].set_color("white")
-    ax.spines["left"].set_color("white")
-    ax.spines["right"].set_color("white")
-    ax.tick_params(axis="x", colors="white")
-    ax.tick_params(axis="y", colors="white")
+    ax.spines["bottom"].set_color("black")
+    ax.spines["top"].set_color("black")
+    ax.spines["left"].set_color("black")
+    ax.spines["right"].set_color("black")
+    ax.tick_params(axis="x", colors="black")
+    ax.tick_params(axis="y", colors="black")
     st.pyplot(fig)
 
     # Évaluation du modèle
@@ -237,7 +237,7 @@ if city and var_to_study:
     st.markdown("""
         <style>
         .custom-box {
-            background-color: #280137;
+            background-color: #c1c6fc;
             padding: 10px;
             border-radius: 5px;
             border: none;

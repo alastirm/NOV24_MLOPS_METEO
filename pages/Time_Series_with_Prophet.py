@@ -70,7 +70,7 @@ if city and var_to_study:
     st.markdown("""
         <style>
         .custom-box {
-            background-color: #280137;
+            background-color: #c1c6fc;
             padding: 10px;
             border-radius: 5px;
             border: none;
@@ -83,10 +83,10 @@ if city and var_to_study:
         </div>
     """, unsafe_allow_html=True)
     result = seasonal_decompose(city_data[var_to_study], model="additive", period=365)
-    trace_original = go.Scatter(x=result.observed.index, y=result.observed, mode="lines", name="Original", line=dict(color="silver", width=1))
-    trace_trend = go.Scatter(x=result.trend.index, y=result.trend, mode="lines", name="Trend", line=dict(color="lightcyan", width=1))
-    trace_seasonal = go.Scatter(x=result.seasonal.index, y=result.seasonal, mode="lines", name="Seasonal", line=dict(color="ivory", width=1))
-    trace_resid = go.Scatter(x=result.resid.index, y=result.resid, mode="markers", name="Residual", marker=dict(color="mistyrose", size=5))
+    trace_original = go.Scatter(x=result.observed.index, y=result.observed, mode="lines", name="Original", line=dict(color="gray", width=1))
+    trace_trend = go.Scatter(x=result.trend.index, y=result.trend, mode="lines", name="Trend", line=dict(color="darkolivegreen", width=1))
+    trace_seasonal = go.Scatter(x=result.seasonal.index, y=result.seasonal, mode="lines", name="Seasonal", line=dict(color="olivedrab", width=1))
+    trace_resid = go.Scatter(x=result.resid.index, y=result.resid, mode="markers", name="Residual", marker=dict(color="yellowgreen", size=5))
     fig = sp.make_subplots(
         rows=4, cols=1,
         subplot_titles=("Original", "Trend", "Seasonal", "Residual"),
@@ -118,7 +118,7 @@ if city and var_to_study:
     st.markdown("""
         <style>
         .custom-box {
-            background-color: #280137;
+            background-color: #c1c6fc;
             padding: 10px;
             border-radius: 5px;
             border: none;
@@ -156,7 +156,7 @@ if city and var_to_study:
     st.markdown("""
         <style>
         .custom-box {
-            background-color: #280137;
+            background-color: #c1c6fc;
             padding: 10px;
             border-radius: 5px;
             border: none;
@@ -174,22 +174,22 @@ if city and var_to_study:
         x=forecast["ds"], 
         y=forecast["yhat"], 
         mode="lines", 
-        name="Prédiction", 
+        name="Predictions", 
         line=dict(color="red", width=2)
     ))
     fig.add_trace(go.Scatter(
         x=forecast["ds"], 
         y=forecast["yhat_upper"], 
         mode="lines", 
-        name="Intervalle supérieur", 
-        line=dict(color="silver", dash="dot")
+        name="Upper interval", 
+        line=dict(color="lightgray", dash="dot")
     ))
     fig.add_trace(go.Scatter(
         x=forecast["ds"], 
         y=forecast["yhat_lower"], 
         mode="lines", 
-        name="Intervalle inférieur", 
-        line=dict(color="silver", dash="dot"),
+        name="Lower interval", 
+        line=dict(color="lightgray", dash="dot"),
         fill="tonexty",
         fillcolor="rgba(169,169,169,0.2)"
     ))
@@ -197,8 +197,8 @@ if city and var_to_study:
         x=test["ds"], 
         y=test["y"], 
         mode="markers", 
-        name="Données réelles", 
-        marker=dict(color="skyblue", size=4)
+        name="Real data", 
+        marker=dict(color="black", size=4)
     ))
     fig.update_layout(
         xaxis_title="Date",
@@ -215,7 +215,7 @@ if city and var_to_study:
     st.markdown("""
         <style>
         .custom-box {
-            background-color: #280137;
+            background-color: #c1c6fc;
             padding: 10px;
             border-radius: 5px;
             border: none;
