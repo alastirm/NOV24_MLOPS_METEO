@@ -58,10 +58,10 @@ for year in year_list :
                         datatmp.to_csv("../../data/scrapcsv/" + location + "_" + year + month + ".csv")
 
 
-# Ajoute les données au dataset initial
-import preprocess_scrapdata
+# # Ajoute les données au dataset initial
+# import preprocess_scrapdata
 
-preprocess_scrapdata.add_scrap_data(new_data_name = "weatherAUS_tuned")
+# preprocess_scrapdata.add_scrap_data(new_data_name = "weatherAUS_tuned")
 
 
 

@@ -223,7 +223,7 @@ def print_save_models(models_select, report,  cm,  save_name, dir_name=''):
         print("Matrice de confusion :")
         print(cm[model_name])
         report[model_name] = report[model_name].apply(lambda x: round(x,ndigits=2))
-        report[model_name].to_csv("../modeling_results/" + dir_name + "/results_" + save_name + "_" + model_name + ".csv", decimal =",")
+        report[model_name].to_csv("../../modeling_results/" + dir_name + "/results_" + save_name + "_" + model_name + ".csv", decimal =",")
 
 
 # Fonction pour rééchantilloner avec choix du resampler
@@ -383,9 +383,9 @@ def modeling_global(model_name, model, dataset, modeling_batch, param_grids,
     for scoring_name, scoring in grid_metrics.items():
 
         # crée les dossiers de résultats 
-        results_dir = "../modeling_results/global/" + \
+        results_dir = "../../modeling_results/global/" + \
             dataset + "/" + modeling_batch + "/"
-        model_dir = "../saved_models/global/" + \
+        model_dir = "../../saved_models/global/" + \
             dataset + "/" + modeling_batch + "/"
 
         os.makedirs(os.path.dirname(model_dir), exist_ok=True)
@@ -500,7 +500,7 @@ def modeling_location(select_location,
         fit_models(models_select,
         X_train_scaled, X_test_scaled, y_train, y_test,
         save_model=True,
-        save_models_dir="../saved_models/location/"+ save_name + select_location + "_base_",
+        save_models_dir="../../saved_models/location/"+ save_name + select_location + "_base_",
         save_results = False)
 
 
@@ -527,17 +527,17 @@ def modeling_location(select_location,
         fit_models(best_models, 
         X_train_scaled, X_test_scaled,y_train, y_test,
         save_model=True,
-        save_models_dir="../saved_models/location/"+ save_name + select_location + "_best_",
+        save_models_dir="../../saved_models/location/"+ save_name + select_location + "_best_",
         save_results=False)
     
 
     for model_name, model in models_select.items():
     
-        model_dir = "../saved_models/location/" + save_name + select_location + "_best_" + model_name
+        model_dir = "../../saved_models/location/" + save_name + select_location + "_best_" + model_name
         with open(model_dir + '.pkl', 'rb') as f:
             model = pickle.load(f)
 
-        graph_dir = "../modeling_results/location/"+ save_name + select_location + "_best_" + model_name
+        graph_dir = "../../modeling_results/location/"+ save_name + select_location + "_best_" + model_name
 
         graph_title = "\n Location : " + select_location +\
         "\n Modèle : " + model_name +\
@@ -573,7 +573,7 @@ def compare_model_results(modeling_batch, model_qual, model_list,
                                     col_target = "RainTomorrow")
             X_train_scaled, X_test_scaled = scaling(X_train, X_test, scaler = MinMaxScaler())
             
-            model_dir =  "../saved_models/location/" + dataset + "/" + modeling_batch + "/" + \
+            model_dir =  "../../saved_models/location/" + dataset + "/" + modeling_batch + "/" + \
                 scoring + "_"+ select_location + "_" + model_qual + "_" + model_name
 
             
