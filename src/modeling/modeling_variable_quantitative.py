@@ -33,7 +33,7 @@ def location_selection(station_name:str, base_dir:Path):
     - base_dir (Path): Le répertoire de base où enregistrer les résultats.
     """
     # Chargement des données
-    df_location_path = base_dir / "data_location_V2" / f"df_{station_name}.csv"
+    df_location_path = base_dir / "../../data_saved/data_location_V2" / f"df_{station_name}.csv"
     df_location = pd.read_csv(df_location_path)
     df_location["id_Date"] = pd.to_datetime(df_location["id_Date"])
     df_location = df_location.sort_values(by="id_Date", ascending=True)

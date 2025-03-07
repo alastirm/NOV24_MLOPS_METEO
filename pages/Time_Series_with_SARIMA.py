@@ -53,7 +53,7 @@ with st.container():
 if city and var_to_study:
 
     # Charger les données spécifiques à la ville depuis un fichier CSV
-    base_dir = "src/data_location_V2"
+    base_dir = "data_saved/data_location_V2"
     path_dir = os.path.join(base_dir, f"df_{city}.csv")
     city_df = pd.read_csv(path_dir)
     city_df["id_Date"] = pd.to_datetime(city_df["id_Date"])

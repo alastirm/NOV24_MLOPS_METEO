@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import os
 from pathlib import Path
 
-station_ID = pd.read_csv("../data/station_ID.csv", sep=",")
+station_ID = pd.read_csv("../../data/station_ID.csv", sep=",")
 # drop les stations sans ID
 station_ID = station_ID.dropna(subset = ["IDCJDW"])
 
@@ -28,7 +28,7 @@ for year in year_list :
             id_location = station_ID.loc[(station_ID.Location2 == location) & 
                         (station_ID.Location == location),"IDCJDW"]
             
-            if not(Path("../data/scrapcsv/" + location + "_" + year + month + ".csv").exists()):
+            if not(Path("../../data/scrapcsv/" + location + "_" + year + month + ".csv").exists()):
 
 
                 url_csv = "https://reg.bom.gov.au/climate/dwo/" + \
@@ -55,7 +55,7 @@ for year in year_list :
 
                     if datatmp.columns[0] == "Date":
                         print("Date repérée -> enregistrement du csv ", location, "_",year+month)
-                        datatmp.to_csv("../data/scrapcsv/" + location + "_" + year + month + ".csv")
+                        datatmp.to_csv("../../data/scrapcsv/" + location + "_" + year + month + ".csv")
 
 
 # Ajoute les données au dataset initial
@@ -77,7 +77,7 @@ preprocess_scrapdata.add_scrap_data(new_data_name = "weatherAUS_tuned")
 # skiprows = station_ID.loc[(station_ID.Location2 == location) & 
 #             (station_ID.Location == location),"skiprows"].values[0].astype(int)
 
-# if not(Path("../data/scrapcsv/" + location + "_" + year + month + ".csv").exists()):
+# if not(Path("../../data/scrapcsv/" + location + "_" + year + month + ".csv").exists()):
 
 #     r = requests.get(url_csv)
 #     if r.ok:
@@ -91,7 +91,7 @@ preprocess_scrapdata.add_scrap_data(new_data_name = "weatherAUS_tuned")
 #                         index_col=1,
 #                         encoding = "ISO-8859-1")
         
-#         datatmp.to_csv("../data/scrapcsv/" + location + "_" + year + month + ".csv")
+#         datatmp.to_csv("../../data/scrapcsv/" + location + "_" + year + month + ".csv")
 
 
 # import urllib2  # the lib that handles the url stuff

@@ -7,7 +7,7 @@ from pathlib import Path
 
 def preprocess_scrap_data() :
 
-    station_ID = pd.read_csv("../data/station_ID.csv", sep=",")
+    station_ID = pd.read_csv("../../data/station_ID.csv", sep=",")
 
     # drop les stations sans ID
     station_ID = station_ID.dropna(subset = ["IDCJDW"])
@@ -30,7 +30,7 @@ def preprocess_scrap_data() :
         print("Preprocessing new data on ", location)
         for year in year_list :
             for month in month_list[year] :
-                dir_csv = "../data/scrapcsv/" + location + "_" + year + month + ".csv"
+                dir_csv = "../../data/scrapcsv/" + location + "_" + year + month + ".csv"
                 if Path(dir_csv).exists():
                     df = pd.read_csv(dir_csv, header = 0).drop(columns = 'Unnamed: 0')
                     df_location = pd.concat([df_location, df])        
@@ -80,7 +80,7 @@ def preprocess_scrap_data() :
 
 
     # Ajout de la variable climate
-    Location_climate = pd.read_csv("../data/Location_Climate_unique.csv")
+    Location_climate = pd.read_csv("../../data/Location_Climate_unique.csv")
     df_global = pd.merge(df_global, Location_climate,  on="Location", how="left")
 
     # Transforme la date en datetime
@@ -102,7 +102,7 @@ def preprocess_scrap_data() :
 
 def add_scrap_data(new_data_name) :
 
-    station_ID = pd.read_csv("../data/station_ID.csv", sep=",")
+    station_ID = pd.read_csv("../../data/station_ID.csv", sep=",")
 
     # drop les stations sans ID
     station_ID = station_ID.dropna(subset = ["IDCJDW"])
@@ -125,7 +125,7 @@ def add_scrap_data(new_data_name) :
         print("Preprocessing new data on ", location)
         for year in year_list :
             for month in month_list[year] :
-                dir_csv = "../data/scrapcsv/" + location + "_" + year + month + ".csv"
+                dir_csv = "../../data/scrapcsv/" + location + "_" + year + month + ".csv"
                 if Path(dir_csv).exists():
                     df = pd.read_csv(dir_csv, header = 0).drop(columns = 'Unnamed: 0')
                     df_location = pd.concat([df_location, df])        
@@ -175,11 +175,11 @@ def add_scrap_data(new_data_name) :
 
 
     # chargement des données initiales
-    data_dir = "../data/weatherAUS.csv"
+    data_dir = "../../data/weatherAUS.csv"
     df_init = pd.read_csv(data_dir)
     
     # concaténation deux données
     df_tuned = pd.concat([df_init, df_global])
-    df_tuned.to_csv("../data/"+ new_data_name +".csv")
+    df_tuned.to_csv("../../data/"+ new_data_name +".csv")
     print("Dataframe créé !")
     return df_tuned

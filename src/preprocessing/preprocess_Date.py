@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
+import datetime
 
 # Fonction qui extrait la saison en Australie pour une variable au format Datetime
 # x doit contenir le mois
@@ -36,3 +37,26 @@ def preprocess_Date(df):
     # Ajout de la variable Season
     df["Season"] = df["Date"].apply(lambda x: get_season_AU(x))
     return df
+
+
+def create_date_list(df):
+    # création de la liste des dates sur l'ensemble de la période ####
+    
+    # Define start and end dates
+    start_date = df["Date"].min()
+    end_date = df["Date"].max()
+    start_date
+    # Initialize an empty list
+    date_list = []
+
+    # Loop through the range of dates and append to the list
+    while start_date <= end_date:
+        date_list.append(start_date)
+        start_date += datetime.timedelta(days=1)
+
+    df_dates = pd.DataFrame({"Dates" : date_list})
+    df_dates["Year"] = df_dates["Dates"].dt.year
+    df_dates["Year"].value_counts()
+    df_dates["Location"] = "Complete serie"
+
+    return df_dates, date_list

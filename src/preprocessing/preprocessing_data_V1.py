@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 
 # import de la fonction initialize_data_weatherAU(data_dir)
-import preprocessing.init_data as init_data
+import init_data
 
 # Fonctions de preprocessing
 import preprocess_RainTomorrow
@@ -16,13 +16,13 @@ import preprocess_var_quali
 import preprocess_pressure_humidity
 
 # Fonctions encodage
-import preprocessing.encode_functions as encode_functions
+import encode_functions
 
 # pipeline
 from sklearn.pipeline import Pipeline
 
 # chargement des données
-data_dir = "../data/weatherAUS.csv"
+data_dir = "../../data/weatherAUS.csv"
 df = init_data.initialize_data_weatherAU(data_dir)
 
 # Vérification chargement

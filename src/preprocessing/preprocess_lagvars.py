@@ -11,19 +11,14 @@ import sys
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder, OrdinalEncoder
 
-import preprocessing.init_data as init_data
+import init_data as init_data
 import preprocess_Date
 
 # Fonctions encodage
-import preprocessing.encode_functions as encode_functions
+import encode_functions as encode_functions
 
 # importing the variance_inflation_factor() function
 from statsmodels.stats.outliers_influence import variance_inflation_factor
-
-# pipeline
-from sklearn.pipeline import Pipeline
-
-import functions_created
 
 def add_lagdelta_vars(df, lag_vars, diff_vars):
 
@@ -33,7 +28,7 @@ def add_lagdelta_vars(df, lag_vars, diff_vars):
     # df_init = preprocess_Date.preprocess_Date(df_init)
     df_init = df 
     df_init["Date"] =  df_init.index.get_level_values(1)
-    df_dates, date_list = functions_created.create_date_list( df_init)
+    df_dates, date_list = preprocess_Date.create_date_list( df_init)
 
     # liste des locations dans le df
     location_list = df.index.get_level_values(0).unique()

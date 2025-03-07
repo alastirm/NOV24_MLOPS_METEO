@@ -11,7 +11,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder, OrdinalEncoder
 
 # import de la fonction initialize_data_weatherAU(data_dir)
-import preprocessing.init_data as init_data
+import init_data
 
 # Fonctions de preprocessing
 import preprocess_RainTomorrow
@@ -19,16 +19,16 @@ import preprocess_Date
 import preprocess_RainToday
 import preprocess_Location
 # Fonctions pour compléter les Nas
-import preprocessing.complete_nas_functions as complete_nas_functions
+import complete_nas_functions
 
 # Fonctions encodage
-import preprocessing.encode_functions as encode_functions
+import encode_functions
 
 # pipeline
 from sklearn.pipeline import Pipeline
 
 # chargement des données
-data_dir = "../data/weatherAUS.csv"
+data_dir = "../../data/weatherAUS.csv"
 df = init_data.initialize_data_weatherAU(data_dir)
 
 # Vérification chargement
@@ -221,7 +221,7 @@ df_final["Location"] = df_final.index.get_level_values(0).values
 df_final = df_final.drop(columns = locations_dummies)
 
 base_dir = Path(__file__).resolve().parent
-output_location = base_dir / "data_location_V2"
+output_location = base_dir / "../../data_saved/data_location_V2"
 if not output_location.exists():
     output_location.mkdir(parents=True)
 groupes = df_final.groupby("Location")
@@ -234,7 +234,7 @@ for location, groupe in groupes:
 # Nettoyage des fichiers créés
 def remove_columns_NAN(location_names, base_dir:Path, threshold:float=0.3):
     for location_name in location_names:
-        df_location_path = base_dir / "data_location_V2" / f"df_{location_name}.csv"
+        df_location_path = base_dir / "../../data_saved/data_location_V2" / f"df_{location_name}.csv"
         if not df_location_path.exists():
             print(f"!! Fichier pour '{location_name}' non trouvé !!")
             continue
@@ -263,7 +263,7 @@ def remove_columns_NAN(location_names, base_dir:Path, threshold:float=0.3):
         df_location_cleaned = df_location_cleaned.dropna()
 
         # Enregistrement
-        output_path = base_dir / "data_location_V2" / f"df_{location_name}.csv"
+        output_path = base_dir / "../../data_saved/data_location_V2" / f"df_{location_name}.csv"
         df_location_cleaned.to_csv(output_path, index=False)
         print(f"Le Fichier {location_name} a été nettoyé et enregistré")
 
