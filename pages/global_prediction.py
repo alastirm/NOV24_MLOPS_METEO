@@ -3,7 +3,6 @@ import os
 
 import emoji
 
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -31,10 +30,7 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler
 import pickle
 # gestion des chemins
 from pathlib import Path
-sys.path.insert(0, './src/')
-
-
-
+sys.path.insert(0, './src/modeling')
 
 cwd = os.getcwd()
 # import des fonctions de modélisations
@@ -358,8 +354,7 @@ with model1_col:
                         st.write("In reality, it rained at  ", city, " on the ", datetomorrow1)
                         st.write("It rained ", str(df.loc[(city, datetomorrow1),"Rainfall"]), " mm")
                     if  y_true1 == 0.0:
-                        st.write("In reality, it rained at  ", city, " on the ", datetomorrow1)
-                        st.write("It rained ", str(df.loc[(city, datetomorrow1),"Rainfall"]), " mm")
+                        st.write("In reality, it didn't rain at  ", city, " on the ", datetomorrow1)
 
 ##############################
 # Chargement deuxième modèle
@@ -450,7 +445,7 @@ with model2_col:
 
                 else:
                     st.write("No model at :", model_dir2 + grid_metric_choice2 + clf_choice2 + "search.pkl")
-                    parameters_choice2 = st.selectbox('Select your parameters ', 'Default parameters', index = None)
+                    parameters_choice2 = st.selectbox('Select your parameters ', 'Default parameters', index = None, key ="456")
                     model2 = classifier_list[clf_choice2]
                     if parameters_choice2:
                         st.write("The selected model will be trained with the following parameters : \n ", model2)
@@ -605,5 +600,4 @@ with model2_col:
                         st.write("In reality, it rained at  ", city2, " on the ", datetomorrow2)
                         st.write("It rained ", str(df2.loc[(city2, datetomorrow2),"Rainfall"]), " mm")
                     if  y_true2 == 0.0:
-                        st.write("In reality, it rained at  ", city2, " on the ", datetomorrow2)
-                        st.write("It rained ", str(df2.loc[(city2, datetomorrow2),"Rainfall"]), " mm")
+                        st.write("In reality, it didn't rain at  ", city2, " on the ", datetomorrow2)

@@ -6,7 +6,7 @@ import seaborn as sns
 import plotly.express as px
 
 # import de la fonction initialize_data_weatherAU(data_dir)
-import init_data
+import preprocessing.init_data as init_data
 
 # chargement des données
 data_dir = "../data/weatherAUS.csv"
